@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import telegram
 from telegram.ext import Updater, CommandHandler
 
 try:
@@ -15,10 +16,17 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - \
 
 def start(bot, update):
     chat_id = update.message.chat_id
-    name = update.message.message
+    name = str(update.message.from_user.first_name)
+    if update.message.from_user.last_name:
+        name += " " + str(update.message.from_user.last_name)
     text = f"Hello {name}!\n" + \
         "Welcome to Questable. To get started, check /help."
-    bot.send_message(chat_id=chat_id, text=text)
+    custom_keyboard = [
+            ['Add Quest', 'Add Side-quests'],
+            ['List Quests', 'List Side-quests']
+            ]
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
 
 updater = Updater(token=config.api_key)
