@@ -23,7 +23,7 @@ def start(bot, update):
     text = f"Hello {name}!\n" + \
         "Welcome to Questable. To get started, check /help."
     custom_keyboard = [
-            ['Add Quest', 'Add Side-quests'],
+            ['Add Quest', 'Add Side-quest'],
             ['List Quests', 'List Side-quests']
             ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
