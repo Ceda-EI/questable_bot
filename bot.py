@@ -2,6 +2,7 @@
 
 import logging
 import telegram
+import sqlite3
 from telegram.ext import Updater, CommandHandler
 
 try:
@@ -28,6 +29,30 @@ def start(bot, update):
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
+
+db = sqlite3.connect("questable.db")
+cursor = db.cursor()
+# Set up tables
+queries = [
+       ("CREATE TABLE IF NOT EXISTS quests(user_id int NOT NULL, qid int NOT"
+           " NULL, name varchar(255) NOT NULL, difficulty int NOT NULL, "
+           "importance int NOT NULL, completed int NOT NULL, date int NOT NULL"
+           ", state int NOT NULL DEFAULT 0, UNIQUE(user_id, qid));"),
+
+       ("CREATE TABLE IF NOT EXISTS side_quests(user_id int NOT NULL, qid int"
+           " NOT NULL, name varchar(255) NOT NULL, difficulty int NOT NULL, "
+           "importance int NOT NULL, completed int NOT NULL, date int NOT NULL"
+           ", state int NOT NULL DEFAULT 0, UNIQUE(user_id, qid));"),
+
+       ("CREATE TABLE IF NOT EXISTS points(user_id int PRIMARY KEY, points "
+           "int);"),
+
+       ("CREATE TABLE IF NOT EXISTS state(user_id int PRIMARY KEY, state "
+           "varchar(10));"),
+        ]
+for query in queries:
+    cursor.execute(query)
+db.commit()
 
 updater = Updater(token=config.api_key)
 dispatcher = updater.dispatcher
