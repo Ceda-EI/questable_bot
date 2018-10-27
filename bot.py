@@ -34,20 +34,20 @@ db = sqlite3.connect("questable.db")
 cursor = db.cursor()
 # Set up tables
 queries = [
-       ("CREATE TABLE IF NOT EXISTS quests(user_id int NOT NULL, qid int NOT"
+       ("CREATE TABLE IF NOT EXISTS quests(chat_id int NOT NULL, qid int NOT"
            " NULL, name varchar(255) NOT NULL, difficulty int NOT NULL, "
-           "importance int NOT NULL, completed int NOT NULL, date int NOT NULL"
-           ", state int NOT NULL DEFAULT 0, UNIQUE(user_id, qid));"),
+           "importance int NOT NULL, date int NOT NULL, state int NOT NULL "
+           "DEFAULT 0, UNIQUE(chat_id, qid));"),
 
-       ("CREATE TABLE IF NOT EXISTS side_quests(user_id int NOT NULL, qid int"
+       ("CREATE TABLE IF NOT EXISTS side_quests(chat_id int NOT NULL, qid int"
            " NOT NULL, name varchar(255) NOT NULL, difficulty int NOT NULL, "
-           "importance int NOT NULL, completed int NOT NULL, date int NOT NULL"
-           ", state int NOT NULL DEFAULT 0, UNIQUE(user_id, qid));"),
+           "importance int NOT NULL, date int NOT NULL, state int NOT NULL "
+           "DEFAULT 0, UNIQUE(chat_id, qid));"),
 
-       ("CREATE TABLE IF NOT EXISTS points(user_id int PRIMARY KEY, points "
+       ("CREATE TABLE IF NOT EXISTS points(chat_id int PRIMARY KEY, points "
            "int);"),
 
-       ("CREATE TABLE IF NOT EXISTS state(user_id int PRIMARY KEY, state "
+       ("CREATE TABLE IF NOT EXISTS state(chat_id int PRIMARY KEY, state "
            "varchar(10));"),
         ]
 for query in queries:
