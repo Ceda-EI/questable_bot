@@ -21,6 +21,22 @@ class base_quest():
         else:
             date = None
 
+    def add_to_db(self):
+        cursor = self.DB.cursor()
+        query = (f'INSERT INTO {self.TABLE}(chat_id, qid, name, importance'
+                 ', difficulty, date, state) values(?, ?, ?, ?, ?, ?, ?)')
+        cursor.execute(query, (self.CHAT_ID, self.QID, self.name, self.imp,
+                               self.diff, self.date, self.state))
+        self.DB.commit()
+
+    def update_db(self):
+        cursor = self.DB.cursor()
+        query = (f'UPDATE {self.TABLE} SET name=?, importance=?, difficulty=?,'
+                 ' date=?, state=? WHERE chat_id=? AND qid=?')
+        cursor.execute(query, (self.name, self.imp, self.diff, self.date,
+                               self.state, self.CHAT_ID, self.QID))
+        self.DB.commit()
+
 
 class quest(base_quest):
     TABLE = "quests"
