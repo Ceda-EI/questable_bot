@@ -37,6 +37,14 @@ class base_quest():
                                self.state, self.CHAT_ID, self.QID))
         self.DB.commit()
 
+    def get_from_db(self):
+        cursor = self.DB.cursor()
+        query = (f'SELECT name, importance, difficulty, date, state FROM '
+                 '{self.TABLE} where chat_id=? AND qid=?')
+        cursor.execute(query, self.CHAT_ID, self.QID)
+        output = cursor.fetchone()
+        self.name, self.imp, self.diff, self.date, self.state = output
+
 
 class quest(base_quest):
     TABLE = "quests"
@@ -44,3 +52,29 @@ class quest(base_quest):
 
 class side_quest(base_quest):
     TABLE = "side_quests"
+
+
+def get_quest(db, chat_id, qid):
+    q = quest(db, chat_id, qid)
+    q.get_from_db()
+    return q
+
+
+def add_quest(self, db, chat_id, qid, name=None, imp=None, diff=None,
+              state=None, date=None):
+    q = quest(self, db, chat_id, qid, name, imp, diff, state, date)
+    q.add_to_db()
+    return q
+
+
+def get_side_quest(db, chat_id, qid):
+    q = side_quest(db, chat_id, qid)
+    q.get_from_db()
+    return q
+
+
+def add_side_quest(self, db, chat_id, qid, name=None, imp=None, diff=None,
+                   state=None, date=None):
+    q = side_quest(self, db, chat_id, qid, name, imp, diff, state, date)
+    q.add_to_db()
+    return q
