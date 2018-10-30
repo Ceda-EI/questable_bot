@@ -124,3 +124,18 @@ class player():
         query = 'UPDATE points SET points=? WHERE chat_id=?'
         cursor.execute(query, (new_points, self.CHAT_ID))
         self.DB.commit()
+
+    def get_quests(self, state=1):
+        cursor = self.DB.cursor()
+        query = ('SELECT chat_id, qid, name, importance, difficulty, date, '
+                 'state FROM quests WHERE chat_id = ?')
+        if state is not None:
+            query += ' AND state = ?'
+            cursor.execute(query, state)
+        else:
+            cursor.execute(query)
+        quests = []
+        for row in cursor:
+            q = quest(self.DB, *row)
+            quests.append(q)
+        return quests
