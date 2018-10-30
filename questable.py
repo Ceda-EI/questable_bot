@@ -19,7 +19,7 @@ class base_quest():
             else:
                 self.date = datetime.fromtimestamp(date)
         else:
-            date = None
+            self.date = None
 
     def add_to_db(self):
         cursor = self.DB.cursor()
@@ -40,8 +40,8 @@ class base_quest():
     def get_from_db(self):
         cursor = self.DB.cursor()
         query = (f'SELECT name, importance, difficulty, date, state FROM '
-                 '{self.TABLE} where chat_id=? AND qid=?')
-        cursor.execute(query, self.CHAT_ID, self.QID)
+                 f'{self.TABLE} where chat_id=? AND qid=?')
+        cursor.execute(query, (self.CHAT_ID, self.QID))
         output = cursor.fetchone()
         self.name, self.imp, self.diff, self.date, self.state = output
 
@@ -60,9 +60,9 @@ def get_quest(db, chat_id, qid):
     return q
 
 
-def add_quest(self, db, chat_id, qid, name=None, imp=None, diff=None,
+def add_quest(db, chat_id, qid, name=None, imp=None, diff=None,
               state=None, date=None):
-    q = quest(self, db, chat_id, qid, name, imp, diff, state, date)
+    q = quest(db, chat_id, qid, name, imp, diff, state, date)
     q.add_to_db()
     return q
 
@@ -73,9 +73,9 @@ def get_side_quest(db, chat_id, qid):
     return q
 
 
-def add_side_quest(self, db, chat_id, qid, name=None, imp=None, diff=None,
+def add_side_quest(db, chat_id, qid, name=None, imp=None, diff=None,
                    state=None, date=None):
-    q = side_quest(self, db, chat_id, qid, name, imp, diff, state, date)
+    q = side_quest(db, chat_id, qid, name, imp, diff, state, date)
     q.add_to_db()
     return q
 
@@ -85,23 +85,23 @@ class player():
         self.DB = db
         self.CHAT_ID = chat_id
         cursor = self.DB.cursor()
-        cursor.execute('SELECT * FROM state WHERE chat_id = ?')
+        cursor.execute('SELECT * FROM state WHERE chat_id = ?', (chat_id,))
         row = cursor.fetchone()
         if not row:
-            cursor.execute('INSERT INTO state(chat_id, state) VALUES(?,?)'
+            cursor.execute('INSERT INTO state(chat_id, state) VALUES(?,?)',
                            (chat_id, 'none'))
             db.commit()
-        cursor.execute('SELECT * FROM points WHERE chat_id = ?')
+        cursor.execute('SELECT * FROM points WHERE chat_id = ?', (chat_id,))
         row = cursor.fetchone()
         if not row:
-            cursor.execute('INSERT INTO points(chat_id, points) VALUES(?,?)'
+            cursor.execute('INSERT INTO points(chat_id, points) VALUES(?,?)',
                            (chat_id, 0))
             db.commit()
 
     def get_state(self):
         cursor = self.DB.cursor()
         query = 'SELECT state FROM state WHERE chat_id=?'
-        cursor.execute(query, self.CHAT_ID)
+        cursor.execute(query, (self.CHAT_ID,))
         output = cursor.fetchone()
         return output[0]
 
@@ -114,7 +114,7 @@ class player():
     def get_points(self):
         cursor = self.DB.cursor()
         query = 'SELECT points FROM points WHERE chat_id=?'
-        cursor.execute(query, self.CHAT_ID)
+        cursor.execute(query, (self.CHAT_ID,))
         output = cursor.fetchone()
         return int(output[0])
 
@@ -125,17 +125,32 @@ class player():
         cursor.execute(query, (new_points, self.CHAT_ID))
         self.DB.commit()
 
-    def get_quests(self, state=1):
+    def get_quests(self, state=0):
         cursor = self.DB.cursor()
         query = ('SELECT chat_id, qid, name, importance, difficulty, date, '
                  'state FROM quests WHERE chat_id = ?')
         if state is not None:
             query += ' AND state = ?'
-            cursor.execute(query, state)
+            cursor.execute(query, (self.CHAT_ID, state))
         else:
-            cursor.execute(query)
+            cursor.execute(query, (self.CHAT_ID,))
         quests = []
         for row in cursor:
             q = quest(self.DB, *row)
+            quests.append(q)
+        return quests
+
+    def get_side_quests(self, state=0):
+        cursor = self.DB.cursor()
+        query = ('SELECT chat_id, qid, name, importance, difficulty, date, '
+                 'state FROM side_quests WHERE chat_id = ?')
+        if state is not None:
+            query += ' AND state = ?'
+            cursor.execute(query, (self.CHAT_ID, state))
+        else:
+            cursor.execute(query, (self.CHAT_ID,))
+        quests = []
+        for row in cursor:
+            q = side_quest(self.DB, *row)
             quests.append(q)
         return quests
