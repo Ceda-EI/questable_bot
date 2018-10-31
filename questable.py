@@ -88,8 +88,8 @@ class player():
         cursor.execute('SELECT * FROM state WHERE chat_id = ?', (chat_id,))
         row = cursor.fetchone()
         if not row:
-            cursor.execute('INSERT INTO state(chat_id, state) VALUES(?,?)',
-                           (chat_id, 'none'))
+            cursor.execute('INSERT INTO state(chat_id, state, extra) '
+                           'VALUES(?,?)', (chat_id, 'none', 0))
             db.commit()
         cursor.execute('SELECT * FROM points WHERE chat_id = ?', (chat_id,))
         row = cursor.fetchone()
@@ -100,15 +100,15 @@ class player():
 
     def get_state(self):
         cursor = self.DB.cursor()
-        query = 'SELECT state FROM state WHERE chat_id=?'
+        query = 'SELECT state, extra FROM state WHERE chat_id=?'
         cursor.execute(query, (self.CHAT_ID,))
         output = cursor.fetchone()
-        return output[0]
+        return {"state": output[0], "extra": output[1]}
 
-    def set_state(self, state):
+    def set_state(self, state, extra=0):
         cursor = self.DB.cursor()
-        query = 'UPDATE state SET state=? WHERE chat_id=?'
-        cursor.execute(query, (state, self.CHAT_ID))
+        query = 'UPDATE state SET state=?, extra=? WHERE chat_id=?'
+        cursor.execute(query, (state, extra, self.CHAT_ID))
         self.DB.commit()
 
     def get_points(self):
