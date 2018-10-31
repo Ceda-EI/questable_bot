@@ -3,7 +3,8 @@
 import logging
 import telegram
 import sqlite3
-from telegram.ext import Updater, CommandHandler
+import questable
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 try:
     import config
@@ -23,26 +24,65 @@ def start(bot, update):
     text = f"Hello {name}!\n" + \
         "Welcome to Questable. To get started, check /help."
     custom_keyboard = [
-            ['Add Quest', 'Add Side-quest'],
-            ['List Quests', 'List Side-quests']
+            ['Add Quest', 'Add Side Quest'],
+            ['List Quests', 'List Side Quests']
             ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
 
-db = sqlite3.connect("questable.db")
+def add_quest(bot, update, player, type="quest"):
+    # Get largest id and set qid to 1 more than that
+    if type == "quest":
+        x = player.get_quests(None)
+    elif type == "side_quest":
+        x = player.get_side_quests(None)
+    else:
+        raise ValueError('Not quest or side_quest')
+    if len(x) == 0:
+        qid = 1
+    else:
+        x.sort(key=lambda i: i.QID, reverse=True)
+        qid = x[0].QID + 1
+
+    # Add quest / sub_quest
+    if type == 'quest':
+        questable.add_quest(player.DB, player.CHAT_ID, qid)
+        player.set_state('aq', qid)
+    if type == 'side_quest':
+        questable.add_side_quest(player.DB, player.CHAT_ID, qid)
+        player.set_state('asq', qid)
+
+    # Send message
+    chat_id = update.message.chat_id
+    text = ("What shall the name of " +
+            {"quest": "Quest", "side_quest": "Side Quest"}[type] + " be?")
+    reply_markup = telegram.ReplyKeyboardRemove()
+    bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
+
+
+def message_handling(bot, update, db):
+    text = update.message.text
+    player = questable.player(db, update.message.chat_id)
+    state = player.get_state()
+    if state["state"] == "none":
+        if text == "Add Quest":
+            add_quest(bot, update, player)
+        elif text == "Add Side Quest":
+            add_quest(bot, update, player, "side_quest")
+
+
+db = sqlite3.connect("questable.db", check_same_thread=False)
 cursor = db.cursor()
 # Set up tables
 queries = [
        ("CREATE TABLE IF NOT EXISTS quests(chat_id int NOT NULL, qid int NOT"
-           " NULL, name varchar(255) NOT NULL, difficulty int NOT NULL, "
-           "importance int NOT NULL, date int NOT NULL, state int NOT NULL "
-           "DEFAULT 0, UNIQUE(chat_id, qid));"),
+           " NULL, name varchar(255), difficulty int, importance int, date int"
+           ", state int DEFAULT 0, UNIQUE(chat_id, qid));"),
 
-       ("CREATE TABLE IF NOT EXISTS side_quests(chat_id int NOT NULL, qid int"
-           " NOT NULL, name varchar(255) NOT NULL, difficulty int NOT NULL, "
-           "importance int NOT NULL, date int NOT NULL, state int NOT NULL "
-           "DEFAULT 0, UNIQUE(chat_id, qid));"),
+       ("CREATE TABLE IF NOT EXISTS side_quests(chat_id int NOT NULL, qid int "
+           "NOT NULL, name varchar(255), difficulty int, importance int, date "
+           "int, state int DEFAULT 0, UNIQUE(chat_id, qid));"),
 
        ("CREATE TABLE IF NOT EXISTS points(chat_id int PRIMARY KEY, points "
            "int);"),
@@ -59,5 +99,8 @@ dispatcher = updater.dispatcher
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
+
+handler = MessageHandler(Filters.text, lambda x, y: message_handling(x, y, db))
+dispatcher.add_handler(handler)
 
 updater.start_polling()

@@ -89,7 +89,7 @@ class player():
         row = cursor.fetchone()
         if not row:
             cursor.execute('INSERT INTO state(chat_id, state, extra) '
-                           'VALUES(?,?)', (chat_id, 'none', 0))
+                           'VALUES(?,?,?)', (chat_id, 'none', 0))
             db.commit()
         cursor.execute('SELECT * FROM points WHERE chat_id = ?', (chat_id,))
         row = cursor.fetchone()
