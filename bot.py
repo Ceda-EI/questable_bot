@@ -82,13 +82,13 @@ def add_name(bot, update, player, type, qid):
 
 
 def add_diff(bot, update, player, type, qid):
-    message = update.message.text
+    message = update.message.text.lower()
     chat_id = update.message.chat_id
-    if message == "Low":
+    if message == "low":
         diff = 1
-    elif message == "Medium":
+    elif message == "medium":
         diff = 2
-    elif message == "High":
+    elif message == "high":
         diff = 3
     else:
         bot.send_message(chat_id=chat_id, text="Invalid Option")
@@ -113,13 +113,13 @@ def add_diff(bot, update, player, type, qid):
 
 
 def add_imp(bot, update, player, type, qid):
-    message = update.message.text
+    message = update.message.text.lower()
     chat_id = update.message.chat_id
-    if message == "Low":
+    if message == "low":
         imp = 1
-    elif message == "Medium":
+    elif message == "medium":
         imp = 2
-    elif message == "High":
+    elif message == "high":
         imp = 3
     else:
         bot.send_message(chat_id=chat_id, text="Invalid Option")
@@ -173,7 +173,7 @@ def me_handler(bot, update, db):
 
 
 def message_handling(bot, update, db):
-    text = update.message.text
+    text = update.message.text.lower()
     player = questable.player(db, update.message.chat_id)
     state = player.get_state()
 
@@ -186,9 +186,9 @@ def message_handling(bot, update, db):
     # importance requested
 
     if state["state"] == "none":
-        if text == "Add Quest":
+        if text == "add quest":
             add_quest(bot, update, player)
-        elif text == "Add Side Quest":
+        elif text == "add side quest":
             add_quest(bot, update, player, "side_quest")
     elif state["state"] == "aq":
         add_name(bot, update, player, "quest", state["extra"])
