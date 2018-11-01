@@ -172,6 +172,27 @@ def me_handler(bot, update, db):
     send_status(bot, update, player)
 
 
+def list_quests(bot, update, player, type):
+    if type == "quest":
+        x = player.get_quests(0)
+    elif type == "side_quest":
+        x = player.get_side_quests(0)
+    else:
+        raise ValueError('Not quest or side_quest')
+    text = "<b>List of " + {"quest": "Quests", "side_quest":
+                            "Side Quests"}[type] + "</b>\n"
+    x.sort(key=lambda i: (i.imp, -i.QID), reverse=True)
+    if type == "quest":
+        for i in x:
+            text += f"\n/Q_{i.QID} {i.name}"
+    else:
+        for i in x:
+            text += f"\n/SQ_{i.QID} {i.name}"
+
+    chat_id = update.message.chat_id
+    bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
+
+
 def message_handling(bot, update, db):
     text = update.message.text.lower()
     player = questable.player(db, update.message.chat_id)
@@ -190,6 +211,10 @@ def message_handling(bot, update, db):
             add_quest(bot, update, player)
         elif text == "add side quest":
             add_quest(bot, update, player, "side_quest")
+        elif text == "list quests":
+            list_quests(bot, update, player, "quest")
+        elif text == "list side quests":
+            list_quests(bot, update, player, "side_quest")
     elif state["state"] == "aq":
         add_name(bot, update, player, "quest", state["extra"])
     elif state["state"] == "asq":
