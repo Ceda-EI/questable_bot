@@ -138,12 +138,38 @@ def add_imp(bot, update, player, type, qid):
     x.update_db()
 
     text = "Quest Added!"
+    bot.send_message(chat_id=chat_id, text=text)
+    send_status(bot, update, player)
+
+
+def send_status(bot, update, player):
+    name = str(update.message.from_user.first_name)
+    if update.message.from_user.last_name:
+        name += " " + str(update.message.from_user.last_name)
+    points = player.get_points()
+    total_quests = len(player.get_quests(None))
+    completed_quests = len(player.get_quests(1))
+    total_side_quests = len(player.get_side_quests(None))
+    completed_side_quests = len(player.get_side_quests(1))
+
+    text = (f'<b>{name}</b>\n\n'
+            f'🔥XP: {points}\n'
+            f'⭐️Quests: {completed_quests}/{total_quests}\n'
+            f'💠Side Quests: {completed_side_quests}/{total_side_quests}\n')
+    chat_id = update.message.chat_id
     custom_keyboard = [
             ['Add Quest', 'Add Side Quest'],
             ['List Quests', 'List Side Quests']
             ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
-    bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
+    bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup,
+                     parse_mode="HTML")
+
+
+def me_handler(bot, update, db):
+    chat_id = update.message.chat_id
+    player = questable.player(db, chat_id)
+    send_status(bot, update, player)
 
 
 def message_handling(bot, update, db):
@@ -183,12 +209,12 @@ cursor = db.cursor()
 # Set up tables
 queries = [
        ("CREATE TABLE IF NOT EXISTS quests(chat_id int NOT NULL, qid int NOT"
-           " NULL, name varchar(255), difficulty int, importance int, date int"
-           ", state int DEFAULT 0, UNIQUE(chat_id, qid));"),
+           " NULL, name varchar(255), difficulty int, importance int, "
+           "state int DEFAULT 0, UNIQUE(chat_id, qid));"),
 
        ("CREATE TABLE IF NOT EXISTS side_quests(chat_id int NOT NULL, qid int "
-           "NOT NULL, name varchar(255), difficulty int, importance int, date "
-           "int, state int DEFAULT 0, UNIQUE(chat_id, qid));"),
+           "NOT NULL, name varchar(255), difficulty int, importance int, "
+           "state int DEFAULT 0, UNIQUE(chat_id, qid));"),
 
        ("CREATE TABLE IF NOT EXISTS points(chat_id int PRIMARY KEY, points "
            "int);"),
@@ -204,6 +230,9 @@ updater = Updater(token=config.api_key)
 dispatcher = updater.dispatcher
 
 start_handler = CommandHandler('start', start)
+dispatcher.add_handler(start_handler)
+
+start_handler = CommandHandler('me', lambda x, y: me_handler(x, y, db))
 dispatcher.add_handler(start_handler)
 
 handler = MessageHandler(Filters.text, lambda x, y: message_handling(x, y, db))

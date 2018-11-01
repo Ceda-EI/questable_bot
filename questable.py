@@ -1,11 +1,8 @@
-from datetime import datetime
-
-
 class base_quest():
     TABLE = None
 
     def __init__(self, db, chat_id, qid, name=None, imp=None, diff=None,
-                 state=None, date=None):
+                 state=None):
         self.DB = db
         self.CHAT_ID = chat_id
         self.name = name
@@ -13,37 +10,30 @@ class base_quest():
         self.imp = imp
         self.diff = diff
         self.state = state
-        if date:
-            if isinstance(date, datetime):
-                self.date = date
-            else:
-                self.date = datetime.fromtimestamp(date)
-        else:
-            self.date = None
 
     def add_to_db(self):
         cursor = self.DB.cursor()
         query = (f'INSERT INTO {self.TABLE}(chat_id, qid, name, importance'
-                 ', difficulty, date, state) values(?, ?, ?, ?, ?, ?, ?)')
+                 ', difficulty, state) values(?, ?, ?, ?, ?, ?)')
         cursor.execute(query, (self.CHAT_ID, self.QID, self.name, self.imp,
-                               self.diff, self.date, self.state))
+                               self.diff, self.state))
         self.DB.commit()
 
     def update_db(self):
         cursor = self.DB.cursor()
         query = (f'UPDATE {self.TABLE} SET name=?, importance=?, difficulty=?,'
-                 ' date=?, state=? WHERE chat_id=? AND qid=?')
-        cursor.execute(query, (self.name, self.imp, self.diff, self.date,
+                 ' state=? WHERE chat_id=? AND qid=?')
+        cursor.execute(query, (self.name, self.imp, self.diff,
                                self.state, self.CHAT_ID, self.QID))
         self.DB.commit()
 
     def get_from_db(self):
         cursor = self.DB.cursor()
-        query = (f'SELECT name, importance, difficulty, date, state FROM '
+        query = (f'SELECT name, importance, difficulty, state FROM '
                  f'{self.TABLE} where chat_id=? AND qid=?')
         cursor.execute(query, (self.CHAT_ID, self.QID))
         output = cursor.fetchone()
-        self.name, self.imp, self.diff, self.date, self.state = output
+        self.name, self.imp, self.diff, self.state = output
 
 
 class quest(base_quest):
@@ -61,8 +51,8 @@ def get_quest(db, chat_id, qid):
 
 
 def add_quest(db, chat_id, qid, name=None, imp=None, diff=None,
-              state=None, date=None):
-    q = quest(db, chat_id, qid, name, imp, diff, state, date)
+              state=None):
+    q = quest(db, chat_id, qid, name, imp, diff, state)
     q.add_to_db()
     return q
 
@@ -74,8 +64,8 @@ def get_side_quest(db, chat_id, qid):
 
 
 def add_side_quest(db, chat_id, qid, name=None, imp=None, diff=None,
-                   state=None, date=None):
-    q = side_quest(db, chat_id, qid, name, imp, diff, state, date)
+                   state=None):
+    q = side_quest(db, chat_id, qid, name, imp, diff, state)
     q.add_to_db()
     return q
 
@@ -127,7 +117,7 @@ class player():
 
     def get_quests(self, state=0):
         cursor = self.DB.cursor()
-        query = ('SELECT chat_id, qid, name, importance, difficulty, date, '
+        query = ('SELECT chat_id, qid, name, importance, difficulty, '
                  'state FROM quests WHERE chat_id = ?')
         if state is not None:
             query += ' AND state = ?'
@@ -142,7 +132,7 @@ class player():
 
     def get_side_quests(self, state=0):
         cursor = self.DB.cursor()
-        query = ('SELECT chat_id, qid, name, importance, difficulty, date, '
+        query = ('SELECT chat_id, qid, name, importance, difficulty, '
                  'state FROM side_quests WHERE chat_id = ?')
         if state is not None:
             query += ' AND state = ?'
