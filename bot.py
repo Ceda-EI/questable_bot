@@ -265,6 +265,10 @@ def message_handling(bot, update, db):
         add_imp(bot, update, player, "quest", state["extra"])
     elif state["state"] == "sqi":
         add_imp(bot, update, player, "side_quest", state["extra"])
+    elif state["state"] == "eq":
+        if text == "back":
+            player.set_state('none', 0)
+            send_status(bot, update, player)
 
 
 db = sqlite3.connect("questable.db", check_same_thread=False)
