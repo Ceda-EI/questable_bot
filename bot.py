@@ -269,6 +269,10 @@ def message_handling(bot, update, db):
         if text == "back":
             player.set_state('none', 0)
             send_status(bot, update, player)
+    elif state["state"] == "esq":
+        if text == "back":
+            player.set_state('none', 0)
+            send_status(bot, update, player)
 
 
 db = sqlite3.connect("questable.db", check_same_thread=False)
