@@ -4,7 +4,8 @@ import logging
 import telegram
 import sqlite3
 import questable
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, \
+        RegexHandler
 
 try:
     import config
@@ -153,9 +154,10 @@ def send_status(bot, update, player):
     completed_side_quests = len(player.get_side_quests(1))
 
     text = (f'<b>{name}</b>\n\n'
-            f'🔥XP: {points}\n'
-            f'⭐️Quests: {completed_quests}/{total_quests}\n'
-            f'💠Side Quests: {completed_side_quests}/{total_side_quests}\n')
+            f'<b>🔥 XP:</b> {points}\n'
+            f'<b>⭐️ Quests:</b> {completed_quests}/{total_quests}\n'
+            f'<b>💠 Side Quests:</b> {completed_side_quests}/'
+            f'{total_side_quests}\n')
     chat_id = update.message.chat_id
     custom_keyboard = [
             ['Add Quest', 'Add Side Quest'],
@@ -193,6 +195,41 @@ def list_quests(bot, update, player, type):
     bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
 
 
+def quest(bot, update, player, qid, type):
+    if type == "quest":
+        x = questable.get_quest(player.DB, player.CHAT_ID, qid)
+    elif type == "side_quest":
+        x = questable.get_side_quest(player.DB, player.CHAT_ID, qid)
+    else:
+        raise ValueError('Not quest or side_quest')
+
+    text = ("<b>🗺 " + {"quest": "Quest", "side_quest": "Side Quest"}[type]
+            + f":</b> {x.name}"
+            "\n<b>📌 Priority:</b> " + ["Low", "Medium", "High"][x.imp-1]
+            + "\n<b>📘 Difficulty:</b> " + ["Low", "Medium", "High"][x.diff-1])
+
+    state = {"quest": "eq", "side_quest": "esq"}[type]
+    player.set_state(state, qid)
+    custom_keyboard = [
+            ["Mark as done"],
+            ["Edit Name", "Change Priority", "Change Difficulty"],
+            ["Back"]]
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    chat_id = update.message.chat_id
+    bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML",
+                     reply_markup=reply_markup)
+
+
+def quest_handling(bot, update, db):
+    text = update.message.text.lower().split("_")
+    chat_id = update.message.chat_id
+    player = questable.player(db, chat_id)
+    if text[0] == "/q":
+        quest(bot, update, player, text[1], "quest")
+    elif text[0] == "/sq":
+        quest(bot, update, player, text[1], "side_quest")
+
+
 def message_handling(bot, update, db):
     text = update.message.text.lower()
     player = questable.player(db, update.message.chat_id)
@@ -205,6 +242,7 @@ def message_handling(bot, update, db):
     # requested
     # qi / sqi: (Side) Quest importance: User has entered difficulty,
     # importance requested
+    # eq / qsq: Edit Quest / Side Quest. the user press /Q_\d+ or /SQ_\d+
 
     if state["state"] == "none":
         if text == "add quest":
@@ -262,5 +300,9 @@ dispatcher.add_handler(start_handler)
 
 handler = MessageHandler(Filters.text, lambda x, y: message_handling(x, y, db))
 dispatcher.add_handler(handler)
+
+quest_handler = RegexHandler(r"/[Ss]?[Qq]_\d+", lambda x, y:
+                             quest_handling(x, y, db))
+dispatcher.add_handler(quest_handler)
 
 updater.start_polling()
