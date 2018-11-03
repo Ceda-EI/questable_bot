@@ -197,12 +197,17 @@ def list_quests(bot, update, player, type):
 
 
 def quest(bot, update, player, qid, type):
-    if type == "quest":
-        x = questable.get_quest(player.DB, player.CHAT_ID, qid)
-    elif type == "side_quest":
-        x = questable.get_side_quest(player.DB, player.CHAT_ID, qid)
-    else:
-        raise ValueError('Not quest or side_quest')
+    try:
+        if type == "quest":
+            x = questable.get_quest(player.DB, player.CHAT_ID, qid)
+        elif type == "side_quest":
+            x = questable.get_side_quest(player.DB, player.CHAT_ID, qid)
+    except Exception:
+        chat_id = update.message.chat_id
+        text = ("<b>❗️ Could not find " +
+                {"quest": "Quest", "side_quest": "Side Quest"}[type] + "</b>")
+        bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
+        return
 
     text = ("<b>🗺 " + {"quest": "Quest", "side_quest": "Side Quest"}[type]
             + f":</b> {x.name}"
