@@ -207,14 +207,21 @@ def quest(bot, update, player, qid, type):
     text = ("<b>🗺 " + {"quest": "Quest", "side_quest": "Side Quest"}[type]
             + f":</b> {x.name}"
             "\n<b>📌 Priority:</b> " + ["Low", "Medium", "High"][x.imp-1]
-            + "\n<b>📘 Difficulty:</b> " + ["Low", "Medium", "High"][x.diff-1])
+            + "\n<b>📘 Difficulty:</b> " + ["Low", "Medium", "High"][x.diff-1]
+            + "\n<b>" + ["❎", "✅"][x.state] + " Status:</b> "
+            + ["Incomplete", "Complete"][x.state])
 
-    state = {"quest": "eq", "side_quest": "esq"}[type]
-    player.set_state(state, qid)
-    custom_keyboard = [
-            ["Mark as done"],
-            ["Edit Name", "Change Priority", "Change Difficulty"],
-            ["Back"]]
+    if x.state == 1:
+        player.set_state('bo', 0)
+        custom_keyboard = [["Back"]]
+    elif x.state == 0:
+        state = {"quest": "eq", "side_quest": "esq"}[type]
+        player.set_state(state, qid)
+        custom_keyboard = [
+                ["Mark as done"],
+                ["Edit Name", "Change Priority", "Change Difficulty"],
+                ["Back"]]
+
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     chat_id = update.message.chat_id
     bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML",
@@ -270,6 +277,7 @@ def message_handling(bot, update, db):
     # qi / sqi: (Side) Quest importance: User has entered difficulty,
     # importance requested
     # eq / qsq: Edit Quest / Side Quest. the user press /Q_\d+ or /SQ_\d+
+    # bo: Back Only
 
     if state["state"] == "none":
         if text == "add quest":
@@ -304,6 +312,9 @@ def message_handling(bot, update, db):
             send_status(bot, update, player)
         if text == "mark as done":
             mark_as_done(bot, update, player, state["extra"], "side_quest")
+    elif state["state"] == "bo":
+            player.set_state('none', 0)
+            send_status(bot, update, player)
 
 
 db = sqlite3.connect("questable.db", check_same_thread=False)
