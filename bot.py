@@ -272,6 +272,48 @@ def mark_as_done(bot, update, player, qid, type):
                        reply_markup=reply_markup)
 
 
+def edit_quest(bot, update, player, qid, target, type):
+    if type == "quest":
+        x = questable.get_quest(player.DB, player.CHAT_ID, qid)
+    elif type == "side_quest":
+        x = questable.get_side_quest(player.DB, player.CHAT_ID, qid)
+    else:
+        raise ValueError('Not quest or side_quest')
+
+    message = update.message.text
+    chat_id = update.message.chat_id
+
+    if target == "name":
+        x.name = message
+        text = "<b>Updated Name</b>"
+    elif target == "imp" or target == "diff":
+        message = message.lower()
+        if message != "low" and message != "medium" and message != "high":
+            bot.send_message(chat_id=chat_id, text="Invalid Option")
+            return
+        else:
+            num = {"low": 1, "medium": 2, "high": 3}[message]
+            if target == "imp":
+                x.imp = num
+                text = "<b>Updated Priority</b>"
+            elif target == "diff":
+                x.diff = num
+                text = "<b>Updated Difficulty</b>"
+
+    x.update_db()
+    if type == "quest":
+        player.set_state('eq', qid)
+    elif type == "side_quest":
+        player.set_state('esq', qid)
+    custom_keyboard = [
+            ["Mark as done"],
+            ["Edit Name", "Change Priority", "Change Difficulty"],
+            ["Back"]]
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup,
+                     parse_mode="HTML")
+
+
 def message_handling(bot, update, db):
     text = update.message.text.lower()
     player = questable.player(db, update.message.chat_id)
@@ -286,6 +328,9 @@ def message_handling(bot, update, db):
     # importance requested
     # eq / qsq: Edit Quest / Side Quest. the user press /Q_\d+ or /SQ_\d+
     # bo: Back Only
+    # eqn / esqn: Edit Quest / Side Quest Name
+    # eqi / esqi: Edit Quest / Side Quest Importance
+    # eqd / esqd: Edit Quest / Side Quest Difficulty
 
     if state["state"] == "none":
         if text == "add quest":
@@ -296,33 +341,100 @@ def message_handling(bot, update, db):
             list_quests(bot, update, player, "quest")
         elif text == "list side quests":
             list_quests(bot, update, player, "side_quest")
+
     elif state["state"] == "aq":
         add_name(bot, update, player, "quest", state["extra"])
+
     elif state["state"] == "asq":
         add_name(bot, update, player, "side_quest", state["extra"])
+
     elif state["state"] == "qd":
         add_diff(bot, update, player, "quest", state["extra"])
+
     elif state["state"] == "sqd":
         add_diff(bot, update, player, "side_quest", state["extra"])
+
     elif state["state"] == "qi":
         add_imp(bot, update, player, "quest", state["extra"])
+
     elif state["state"] == "sqi":
         add_imp(bot, update, player, "side_quest", state["extra"])
+
     elif state["state"] == "eq":
         if text == "back":
             player.set_state('none', 0)
             send_status(bot, update, player)
-        if text == "mark as done":
+        elif text == "mark as done":
             mark_as_done(bot, update, player, state["extra"], "quest")
+        elif text == "edit name":
+            player.set_state('eqn', state["extra"])
+            text = "What shall the new name of the Quest be?"
+            reply_markup = telegram.ReplyKeyboardRemove()
+            bot.send_message(chat_id=player.CHAT_ID, text=text,
+                             reply_markup=reply_markup)
+        elif text == "change priority":
+            player.set_state('eqi', state["extra"])
+            text = "How important is it?"
+            custom_keyboard = [["Low", "Medium", "High"]]
+            reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+            bot.send_message(chat_id=player.CHAT_ID, text=text,
+                             reply_markup=reply_markup)
+        elif text == "change difficulty":
+            player.set_state('eqd', state["extra"])
+            text = "How difficult is it?"
+            custom_keyboard = [["Low", "Medium", "High"]]
+            reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+            bot.send_message(chat_id=player.CHAT_ID, text=text,
+                             reply_markup=reply_markup)
+
     elif state["state"] == "esq":
         if text == "back":
             player.set_state('none', 0)
             send_status(bot, update, player)
-        if text == "mark as done":
+        elif text == "mark as done":
             mark_as_done(bot, update, player, state["extra"], "side_quest")
+        elif text == "edit name":
+            player.set_state('esqn', state["extra"])
+            text = "What shall the new name of the Side Quest be?"
+            reply_markup = telegram.ReplyKeyboardRemove()
+            bot.send_message(chat_id=player.CHAT_ID, text=text,
+                             reply_markup=reply_markup)
+        elif text == "change priority":
+            player.set_state('esqi', state["extra"])
+            text = "How important is it?"
+            custom_keyboard = [["Low", "Medium", "High"]]
+            reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+            bot.send_message(chat_id=player.CHAT_ID, text=text,
+                             reply_markup=reply_markup)
+        elif text == "change difficulty":
+            player.set_state('esqd', state["extra"])
+            text = "How difficult is it?"
+            custom_keyboard = [["Low", "Medium", "High"]]
+            reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+            bot.send_message(chat_id=player.CHAT_ID, text=text,
+                             reply_markup=reply_markup)
+
     elif state["state"] == "bo":
-            player.set_state('none', 0)
-            send_status(bot, update, player)
+        player.set_state('none', 0)
+        send_status(bot, update, player)
+
+    elif state["state"] == "eqn":
+        edit_quest(bot, update, player, state["extra"], "name", "quest")
+
+    elif state["state"] == "esqn":
+        edit_quest(bot, update, player, state["extra"], "name", "side_quest")
+
+    elif state["state"] == "eqi":
+        edit_quest(bot, update, player, state["extra"], "imp", "quest")
+
+    elif state["state"] == "esqi":
+        edit_quest(bot, update, player, state["extra"], "imp", "side_quest")
+
+    elif state["state"] == "eqd":
+        edit_quest(bot, update, player, state["extra"], "diff", "quest")
+
+    elif state["state"] == "esqd":
+        edit_quest(bot, update, player, state["extra"], "diff", "side_quest")
 
 
 db = sqlite3.connect("questable.db", check_same_thread=False)
