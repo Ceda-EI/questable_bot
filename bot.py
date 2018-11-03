@@ -144,7 +144,7 @@ def add_imp(bot, update, player, type, qid):
     send_status(bot, update, player)
 
 
-def send_status(bot, update, player):
+def send_status(bot, update, player, prefix=""):
     name = str(update.message.from_user.first_name)
     if update.message.from_user.last_name:
         name += " " + str(update.message.from_user.last_name)
@@ -154,7 +154,7 @@ def send_status(bot, update, player):
     total_side_quests = len(player.get_side_quests(None))
     completed_side_quests = len(player.get_side_quests(1))
 
-    text = (f'<b>{name}</b>\n\n'
+    text = (f'<b>{name}</b>\n\n' + prefix +
             f'<b>🔥 XP:</b> {points}\n'
             f'<b>⭐️ Quests:</b> {completed_quests}/{total_quests}\n'
             f'<b>💠 Side Quests:</b> {completed_side_quests}/'
@@ -261,7 +261,7 @@ def mark_as_done(bot, update, player, qid, type):
     points = (55 if type == "quest" else 0) + 10*x.imp + 15*x.diff
     player.add_points(points)
     player.set_state('none', 0)
-    send_status(bot, update, player)
+    send_status(bot, update, player, f"<b>🌟 Earned {points} XP</b>\n\n")
     chat_id = update.message.chat_id
     custom_keyboard = [
             ['Add Quest', 'Add Side Quest'],
