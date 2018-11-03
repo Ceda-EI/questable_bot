@@ -232,6 +232,9 @@ def quest_handling(bot, update, db):
     text = update.message.text.lower().split("_")
     chat_id = update.message.chat_id
     player = questable.player(db, chat_id)
+    state = player.get_state()
+    if state["state"] in ["aq", "asq", "qd", "sqd", "qi", "sqi"]:
+        return message_handling(bot, update, db)
     if text[0] == "/q":
         quest(bot, update, player, text[1], "quest")
     elif text[0] == "/sq":
