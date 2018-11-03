@@ -4,6 +4,7 @@ import logging
 import telegram
 import sqlite3
 import questable
+import random
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, \
         RegexHandler
 
@@ -230,6 +231,32 @@ def quest_handling(bot, update, db):
         quest(bot, update, player, text[1], "side_quest")
 
 
+def mark_as_done(bot, update, player, qid, type):
+    if type == "quest":
+        x = questable.get_quest(player.DB, player.CHAT_ID, qid)
+    elif type == "side_quest":
+        x = questable.get_side_quest(player.DB, player.CHAT_ID, qid)
+    else:
+        raise ValueError('Not quest or side_quest')
+
+    if x.state == 1:
+        return
+    x.state = 1
+    x.update_db()
+    points = (55 if type == "quest" else 0) + 10*x.imp + 15*x.diff
+    player.add_points(points)
+    player.set_state('none', 0)
+    send_status(bot, update, player)
+    chat_id = update.message.chat_id
+    custom_keyboard = [
+            ['Add Quest', 'Add Side Quest'],
+            ['List Quests', 'List Side Quests']
+            ]
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    bot.send_animation(chat_id=chat_id, animation=random.choice(config.gifs),
+                       reply_markup=reply_markup)
+
+
 def message_handling(bot, update, db):
     text = update.message.text.lower()
     player = questable.player(db, update.message.chat_id)
@@ -269,10 +296,14 @@ def message_handling(bot, update, db):
         if text == "back":
             player.set_state('none', 0)
             send_status(bot, update, player)
+        if text == "mark as done":
+            mark_as_done(bot, update, player, state["extra"], "quest")
     elif state["state"] == "esq":
         if text == "back":
             player.set_state('none', 0)
             send_status(bot, update, player)
+        if text == "mark as done":
+            mark_as_done(bot, update, player, state["extra"], "side_quest")
 
 
 db = sqlite3.connect("questable.db", check_same_thread=False)
