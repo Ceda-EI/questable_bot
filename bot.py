@@ -501,4 +501,10 @@ unknown = MessageHandler(Filters.command, lambda x, y: message_handling(x, y,
                                                                         db))
 dispatcher.add_handler(unknown)
 
-updater.start_polling()
+if config.update_method == "polling":
+    updater.start_polling()
+elif config.update_method == "webhook":
+    updater.start_webhook(listen=config.webhook["listen"],
+                          url=config.webhook["url_path"],
+                          port=config.webhook["port"])
+    updater.set_webhook(webhook_url=config.webhook["url"])
