@@ -488,12 +488,12 @@ dispatcher.add_handler(cancel)
 handler = MessageHandler(Filters.text, lambda x, y: message_handling(x, y, db))
 dispatcher.add_handler(handler)
 
-unknown = CommandHandler(Filters.command, lambda x, y: message_handling(x, y,
-                                                                        db))
-dispatcher.add_handler(unknown)
-
 quest_handler = RegexHandler(r"/[Ss]?[Qq]_\d+", lambda x, y:
                              quest_handling(x, y, db))
 dispatcher.add_handler(quest_handler)
+
+unknown = MessageHandler(Filters.command, lambda x, y: message_handling(x, y,
+                                                                        db))
+dispatcher.add_handler(unknown)
 
 updater.start_polling()
