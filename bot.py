@@ -172,6 +172,7 @@ def send_status(bot, update, player, prefix=""):
 def me_handler(bot, update, db):
     chat_id = update.message.chat_id
     player = questable.player(db, chat_id)
+    drop_state(bot, update, player)
     send_status(bot, update, player)
 
 
@@ -237,9 +238,7 @@ def quest_handling(bot, update, db):
     text = update.message.text.lower().split("_")
     chat_id = update.message.chat_id
     player = questable.player(db, chat_id)
-    state = player.get_state()
-    if state["state"] in ["aq", "asq", "qd", "sqd", "qi", "sqi"]:
-        return message_handling(bot, update, db)
+    drop_state(bot, update, player)
     if text[0] == "/q":
         quest(bot, update, player, text[1], "quest")
     elif text[0] == "/sq":
@@ -314,6 +313,21 @@ def edit_quest(bot, update, player, qid, target, type):
                      parse_mode="HTML")
 
 
+def drop_state(bot, update, player):
+    state = player.get_state()
+    if state["state"] in ["eqn", "esqn", "eqi", "esqi", "eqd", "esqd", "bo",
+                          "eq", "esq"]:
+        player.set_state('none', 0)
+    elif state["state"] in ["aq", "qd", "qi"]:
+        x = questable.get_quest(player.DB, player.CHAT_ID, state["extra"])
+        x.delete_from_db()
+        player.set_state('none', 0)
+    elif state["state"] in ["asq", "sqd", "sqi"]:
+        x = questable.get_side_quest(player.DB, player.CHAT_ID, state["extra"])
+        x.delete_from_db()
+        player.set_state('none', 0)
+
+
 def message_handling(bot, update, db):
     text = update.message.text.lower()
     player = questable.player(db, update.message.chat_id)
@@ -326,7 +340,7 @@ def message_handling(bot, update, db):
     # requested
     # qi / sqi: (Side) Quest importance: User has entered difficulty,
     # importance requested
-    # eq / qsq: Edit Quest / Side Quest. the user press /Q_\d+ or /SQ_\d+
+    # eq / esq: Edit Quest / Side Quest. the user press /Q_\d+ or /SQ_\d+
     # bo: Back Only
     # eqn / esqn: Edit Quest / Side Quest Name
     # eqi / esqi: Edit Quest / Side Quest Importance
@@ -465,11 +479,18 @@ dispatcher = updater.dispatcher
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
-start_handler = CommandHandler('me', lambda x, y: me_handler(x, y, db))
-dispatcher.add_handler(start_handler)
+me = CommandHandler('me', lambda x, y: me_handler(x, y, db))
+dispatcher.add_handler(me)
+
+cancel = CommandHandler('cancel', lambda x, y: me_handler(x, y, db))
+dispatcher.add_handler(cancel)
 
 handler = MessageHandler(Filters.text, lambda x, y: message_handling(x, y, db))
 dispatcher.add_handler(handler)
+
+unknown = CommandHandler(Filters.command, lambda x, y: message_handling(x, y,
+                                                                        db))
+dispatcher.add_handler(unknown)
 
 quest_handler = RegexHandler(r"/[Ss]?[Qq]_\d+", lambda x, y:
                              quest_handling(x, y, db))

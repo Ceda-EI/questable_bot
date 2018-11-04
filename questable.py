@@ -35,6 +35,12 @@ class base_quest():
         output = cursor.fetchone()
         self.name, self.imp, self.diff, self.state = output
 
+    def delete_from_db(self):
+        cursor = self.DB.cursor()
+        query = (f'DELETE FROM {self.TABLE} WHERE chat_id=? AND qid=?')
+        cursor.execute(query, (self.CHAT_ID, self.QID))
+        self.DB.commit()
+
 
 class quest(base_quest):
     TABLE = "quests"
