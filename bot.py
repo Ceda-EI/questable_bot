@@ -505,6 +505,6 @@ if config.update_method == "polling":
     updater.start_polling()
 elif config.update_method == "webhook":
     updater.start_webhook(listen=config.webhook["listen"],
-                          url=config.webhook["url_path"],
+                          url_path=config.webhook["url_path"],
                           port=config.webhook["port"])
-    updater.set_webhook(webhook_url=config.webhook["url"])
+    updater.bot.set_webhook(url=config.webhook["url"])
