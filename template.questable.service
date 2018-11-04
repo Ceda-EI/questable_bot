@@ -1,0 +1,11 @@
+[Unit]
+Description=Questable Bot
+After=Network.target
+
+[Service]
+Type=simple
+User=some_unprivileged_user
+ExecStart=/bin/sh -c 'cd /path/to/questable/ ; python3 bot.py'
+
+[Install]
+WantedBy=multi-user.target
