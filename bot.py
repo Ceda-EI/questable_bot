@@ -183,8 +183,13 @@ def list_quests(bot, update, player, type):
         x = player.get_side_quests(0)
     else:
         raise ValueError('Not quest or side_quest')
-    text = "<b>List of " + {"quest": "Quests", "side_quest":
-                            "Side Quests"}[type] + "</b>\n"
+    if len(x) == 0:
+        text = ("<b>You have completed every " +
+                {"quest": "Quests", "side_quest": "Side Quests"}[type] +
+                " ever known to me.</b>")
+    else:
+        text = "<b>List of " + {"quest": "Quests", "side_quest":
+                                "Side Quests"}[type] + "</b>\n"
     x.sort(key=lambda i: (i.imp, -i.QID), reverse=True)
     if type == "quest":
         for i in x:
