@@ -7,6 +7,8 @@ import questable
 import random
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, \
         RegexHandler
+import signal
+import sys
 
 try:
     import config
@@ -456,8 +458,15 @@ def message_handling(bot, update, db):
         edit_quest(bot, update, player, state["extra"], "diff", "side_quest")
 
 
+def sigterm_handler(signal, frame, db):
+    db.close()
+    sys.exit(0)
+
+
 db = sqlite3.connect("questable.db", check_same_thread=False)
 cursor = db.cursor()
+signal.signal(signal.SIGTERM, lambda x, y: sigterm_handler(x, y, db))
+
 # Set up tables
 queries = [
        ("CREATE TABLE IF NOT EXISTS quests(chat_id int NOT NULL, qid int NOT"
