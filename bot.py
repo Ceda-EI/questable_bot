@@ -315,7 +315,9 @@ def edit_quest(bot, update, player, qid, target, type):
         player.set_state('esq', qid)
     custom_keyboard = [
             ["Mark as done"],
-            ["Edit Name", "Change Priority", "Change Difficulty"],
+            ["Edit Name", "Change Priority"],
+            ["Change Difficulty", "Delete " +
+                {"quest": "Quest", "side_quest": "Side Quest"}[type]],
             ["Back"]]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup,
