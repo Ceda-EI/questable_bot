@@ -337,6 +337,29 @@ def drop_state(bot, update, player):
         player.set_state('none', 0)
 
 
+def help_command(bot, update, db):
+    player = questable.player(db, update.message.chat_id)
+    drop_state(bot, update, player)
+    chat_id = update.message.chat_id
+    custom_keyboard = [
+            ['Add Quest', 'Add Side Quest'],
+            ['List Quests', 'List Side Quests']
+            ]
+    text = ("*Questable Bot*\n\nQuestable is an RPG-like bot for maintaining "
+            "events in real life. _Main Tasks_ are _Quests_ while _other "
+            "tasks_ are _Side Quests._ You can use the bot to maintain a "
+            "list of things you need to do. For completing each Quest/Side "
+            "Quests you get XP based on how difficult and important the "
+            "Quest/Side Quest was. Quests/Side Quests can be added and "
+            "modified later.\n\n To get more help check "
+            "[Extended Help](https://webionite.com/questable/). In case, of "
+            "bugs/feedback/more help, contact @ceda\\_ei or join the "
+            "[group](https://t.me/questable).")
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    bot.send_message(chat_id=chat_id, text=text, parse_mode="Markdown",
+                     reply_markup=reply_markup)
+
+
 def message_handling(bot, update, db):
     text = update.message.text.lower()
     player = questable.player(db, update.message.chat_id)
@@ -525,6 +548,9 @@ dispatcher.add_handler(me)
 
 cancel = CommandHandler('cancel', lambda x, y: me_handler(x, y, db))
 dispatcher.add_handler(cancel)
+
+help_h = CommandHandler('help', lambda x, y: help_command(x, y, db))
+dispatcher.add_handler(help_h)
 
 handler = MessageHandler(Filters.text, lambda x, y: message_handling(x, y, db))
 dispatcher.add_handler(handler)
