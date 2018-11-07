@@ -232,7 +232,9 @@ def quest(bot, update, player, qid, type):
         player.set_state(state, qid)
         custom_keyboard = [
                 ["Mark as done"],
-                ["Edit Name", "Change Priority", "Change Difficulty"],
+                ["Edit Name", "Change Priority"],
+                ["Change Difficulty", "Delete " +
+                    {"quest": "Quest", "side_quest": "Side Quest"}[type]],
                 ["Back"]]
 
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
@@ -362,6 +364,9 @@ def message_handling(bot, update, db):
             list_quests(bot, update, player, "quest")
         elif text == "list side quests":
             list_quests(bot, update, player, "side_quest")
+        else:
+            drop_state(bot, update, player)
+            send_status(bot, update, player)
 
     elif state["state"] == "aq":
         add_name(bot, update, player, "quest", state["extra"])
@@ -407,6 +412,15 @@ def message_handling(bot, update, db):
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
+        elif text == "delete quest":
+            quest = questable.get_quest(db, player.CHAT_ID, state["extra"])
+            quest.delete_from_db()
+            drop_state(bot, update, player)
+            prefix = f"<b>Quest {quest.name} has been deleted</b>\n\n"
+            send_status(bot, update, player, prefix=prefix)
+        else:
+            drop_state(bot, update, player)
+            send_status(bot, update, player)
 
     elif state["state"] == "esq":
         if text == "back":
@@ -434,6 +448,15 @@ def message_handling(bot, update, db):
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
+        elif text == "delete side quest":
+            sq = questable.get_side_quest(db, player.CHAT_ID, state["extra"])
+            sq.delete_from_db()
+            drop_state(bot, update, player)
+            prefix = f"<b>Side Quest {sq.name} has been deleted</b>\n\n"
+            send_status(bot, update, player, prefix=prefix)
+        else:
+            drop_state(bot, update, player)
+            send_status(bot, update, player)
 
     elif state["state"] == "bo":
         player.set_state('none', 0)
@@ -456,6 +479,10 @@ def message_handling(bot, update, db):
 
     elif state["state"] == "esqd":
         edit_quest(bot, update, player, state["extra"], "diff", "side_quest")
+
+    else:
+        drop_state(bot, update, player)
+        send_status(bot, update, player)
 
 
 def sigterm_handler(signal, frame, db):
