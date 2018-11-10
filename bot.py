@@ -187,7 +187,7 @@ def list_quests(bot, update, player, type):
         raise ValueError('Not quest or side_quest')
     if len(x) == 0:
         text = ("<b>You have completed every " +
-                {"quest": "Quests", "side_quest": "Side Quests"}[type] +
+                {"quest": "quest", "side_quest": "side quest"}[type] +
                 " ever known to me.</b>")
     else:
         text = "<b>List of " + {"quest": "Quests", "side_quest":
