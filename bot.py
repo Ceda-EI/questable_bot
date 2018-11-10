@@ -354,7 +354,8 @@ def help_command(bot, update, db):
             "Quests you get XP based on how difficult and important the "
             "Quest/Side Quest was. Quests/Side Quests can be added and "
             "modified later.\n\n To get more help check "
-            "[Extended Help](https://webionite.com/questable/). In case, of "
+            "[Extended Help](https://webionite.com/questable/) or "
+            "[this video](https://t.me/quadnite/25). In case, of "
             "bugs/feedback/more help, contact @ceda\\_ei or join the "
             "[group](https://t.me/questable).")
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
