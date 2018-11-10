@@ -80,7 +80,7 @@ def add_name(bot, update, player, type, qid):
 
     chat_id = update.message.chat_id
     text = "How difficult is it?"
-    custom_keyboard = [["Low", "Medium", "High"]]
+    custom_keyboard = [["📙 Low", "📘 Medium", "📗 High"]]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
@@ -88,11 +88,11 @@ def add_name(bot, update, player, type, qid):
 def add_diff(bot, update, player, type, qid):
     message = update.message.text.lower()
     chat_id = update.message.chat_id
-    if message == "low":
+    if message == "low" or message == "📙 low":
         diff = 1
-    elif message == "medium":
+    elif message == "medium" or message == "📘 medium":
         diff = 2
-    elif message == "high":
+    elif message == "high" or message == "📗 high":
         diff = 3
     else:
         bot.send_message(chat_id=chat_id, text="Invalid Option")
@@ -111,7 +111,7 @@ def add_diff(bot, update, player, type, qid):
     x.update_db()
 
     text = "How important is it?"
-    custom_keyboard = [["Low", "Medium", "High"]]
+    custom_keyboard = [["🔹 Low", "🔸 Medium", "🔺 High"]]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
@@ -119,11 +119,11 @@ def add_diff(bot, update, player, type, qid):
 def add_imp(bot, update, player, type, qid):
     message = update.message.text.lower()
     chat_id = update.message.chat_id
-    if message == "low":
+    if message == "low" or message == "🔹 low":
         imp = 1
-    elif message == "medium":
+    elif message == "medium" or message == "🔸 medium":
         imp = 2
-    elif message == "high":
+    elif message == "high" or message == "🔺 high":
         imp = 3
     else:
         bot.send_message(chat_id=chat_id, text="Invalid Option")
@@ -141,7 +141,7 @@ def add_imp(bot, update, player, type, qid):
     x.imp = imp
     x.update_db()
 
-    text = "Quest Added!"
+    text = {"quest": "Quest", "side_quest": "Side Quest"}[type] + " Added!"
     bot.send_message(chat_id=chat_id, text=text)
     send_status(bot, update, player)
 
@@ -156,7 +156,7 @@ def send_status(bot, update, player, prefix=""):
     total_side_quests = len(player.get_side_quests(None))
     completed_side_quests = len(player.get_side_quests(1))
 
-    text = (f'<b>{name}</b>\n\n' + prefix +
+    text = (prefix + f'<b>👤 {name}</b>\n'
             f'<b>🔥 XP:</b> {points}\n'
             f'<b>⭐️ Quests:</b> {completed_quests}/{total_quests}\n'
             f'<b>💠 Side Quests:</b> {completed_side_quests}/'
@@ -190,8 +190,9 @@ def list_quests(bot, update, player, type):
                 {"quest": "quest", "side_quest": "side quest"}[type] +
                 " ever known to me.</b>")
     else:
-        text = "<b>List of " + {"quest": "Quests", "side_quest":
-                                "Side Quests"}[type] + "</b>\n"
+        text = ("<b>" + {"quest": "📖", "side_quest": "📒"}[type] +
+                " List of " + {"quest": "Quests", "side_quest":
+                               "Side Quests"}[type] + "</b>\n")
     x.sort(key=lambda i: (i.imp, -i.QID), reverse=True)
     if type == "quest":
         for i in x:
@@ -220,7 +221,8 @@ def quest(bot, update, player, qid, type):
     text = ("<b>🗺 " + {"quest": "Quest", "side_quest": "Side Quest"}[type]
             + f":</b> {x.name}"
             "\n<b>📌 Priority:</b> " + ["Low", "Medium", "High"][x.imp-1]
-            + "\n<b>📘 Difficulty:</b> " + ["Low", "Medium", "High"][x.diff-1]
+            + "\n<b>" + ["📙", "📘", "📗"][x.diff-1] + " Difficulty:</b> "
+            + ["Low", "Medium", "High"][x.diff-1]
             + "\n<b>" + ["❎", "✅"][x.state] + " Status:</b> "
             + ["Incomplete", "Complete"][x.state])
 
@@ -231,11 +233,11 @@ def quest(bot, update, player, qid, type):
         state = {"quest": "eq", "side_quest": "esq"}[type]
         player.set_state(state, qid)
         custom_keyboard = [
-                ["Mark as done"],
-                ["Edit Name", "Change Priority"],
-                ["Change Difficulty", "Delete " +
+                ["✅ Mark as done"],
+                ["📝 Edit Name", "⚠️ Change Priority"],
+                ["📚 Change Difficulty", "🗑 Delete " +
                     {"quest": "Quest", "side_quest": "Side Quest"}[type]],
-                ["Back"]]
+                ["⬅️ Back"]]
 
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     chat_id = update.message.chat_id
@@ -294,19 +296,30 @@ def edit_quest(bot, update, player, qid, target, type):
     if target == "name":
         x.name = message
         text = "<b>Updated Name</b>"
-    elif target == "imp" or target == "diff":
+    elif target == "imp":
         message = message.lower()
-        if message != "low" and message != "medium" and message != "high":
+        if message == "low" or message == "🔹 low":
+            x.imp = 1
+        elif message == "medium" or message == "🔸 medium":
+            x.imp = 2
+        elif message == "high" or message == "🔺 high":
+            x.imp = 3
+        else:
             bot.send_message(chat_id=chat_id, text="Invalid Option")
             return
+        text = "<b>Updated Priority</b>"
+    elif target == "diff":
+        message = message.lower()
+        if message == "low" or message == "📙 low":
+            x.diff = 1
+        elif message == "medium" or message == "📘 medium":
+            x.diff = 2
+        elif message == "high" or message == "📗 high":
+            x.diff = 3
         else:
-            num = {"low": 1, "medium": 2, "high": 3}[message]
-            if target == "imp":
-                x.imp = num
-                text = "<b>Updated Priority</b>"
-            elif target == "diff":
-                x.diff = num
-                text = "<b>Updated Difficulty</b>"
+            bot.send_message(chat_id=chat_id, text="Invalid Option")
+            return
+        text = "<b>Updated Difficulty</b>"
 
     x.update_db()
     if type == "quest":
@@ -314,11 +327,11 @@ def edit_quest(bot, update, player, qid, target, type):
     elif type == "side_quest":
         player.set_state('esq', qid)
     custom_keyboard = [
-            ["Mark as done"],
-            ["Edit Name", "Change Priority"],
-            ["Change Difficulty", "Delete " +
+            ["✅ Mark as done"],
+            ["📝 Edit Name", "⚠️ Change Priority"],
+            ["📚 Change Difficulty", "🗑 Delete " +
                 {"quest": "Quest", "side_quest": "Side Quest"}[type]],
-            ["Back"]]
+            ["⬅️ Back"]]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup,
                      parse_mode="HTML")
@@ -413,32 +426,32 @@ def message_handling(bot, update, db):
         add_imp(bot, update, player, "side_quest", state["extra"])
 
     elif state["state"] == "eq":
-        if text == "back":
+        if text == "back" or text == "⬅️ back":
             player.set_state('none', 0)
             send_status(bot, update, player)
-        elif text == "mark as done":
+        elif text == "mark as done" or text == "✅ mark as done":
             mark_as_done(bot, update, player, state["extra"], "quest")
-        elif text == "edit name":
+        elif text == "edit name" or text == "📝 edit name":
             player.set_state('eqn', state["extra"])
             text = "What shall the new name of the Quest be?"
             reply_markup = telegram.ReplyKeyboardRemove()
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
-        elif text == "change priority":
+        elif text == "change priority" or text == "⚠️ change priority":
             player.set_state('eqi', state["extra"])
             text = "How important is it?"
-            custom_keyboard = [["Low", "Medium", "High"]]
+            custom_keyboard = [["🔹 Low", "🔸 Medium", "🔺 High"]]
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
-        elif text == "change difficulty":
+        elif text == "change difficulty" or text == "📚 change difficulty":
             player.set_state('eqd', state["extra"])
             text = "How difficult is it?"
-            custom_keyboard = [["Low", "Medium", "High"]]
+            custom_keyboard = [["📙 Low", "📘 Medium", "📗 High"]]
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
-        elif text == "delete quest":
+        elif text == "delete quest" or text == "🗑 delete quest":
             quest = questable.get_quest(db, player.CHAT_ID, state["extra"])
             quest.delete_from_db()
             drop_state(bot, update, player)
@@ -449,32 +462,32 @@ def message_handling(bot, update, db):
             send_status(bot, update, player)
 
     elif state["state"] == "esq":
-        if text == "back":
+        if text == "back" or text == "⬅️ back":
             player.set_state('none', 0)
             send_status(bot, update, player)
-        elif text == "mark as done":
+        elif text == "mark as done" or text == "✅ mark as done":
             mark_as_done(bot, update, player, state["extra"], "side_quest")
-        elif text == "edit name":
+        elif text == "edit name" or text == "📝 edit name":
             player.set_state('esqn', state["extra"])
             text = "What shall the new name of the Side Quest be?"
             reply_markup = telegram.ReplyKeyboardRemove()
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
-        elif text == "change priority":
+        elif text == "change priority" or text == "⚠️ change priority":
             player.set_state('esqi', state["extra"])
             text = "How important is it?"
-            custom_keyboard = [["Low", "Medium", "High"]]
+            custom_keyboard = [["🔹 Low", "🔸 Medium", "🔺 High"]]
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
-        elif text == "change difficulty":
+        elif text == "change difficulty" or text == "📚 change difficulty":
             player.set_state('esqd', state["extra"])
             text = "How difficult is it?"
-            custom_keyboard = [["Low", "Medium", "High"]]
+            custom_keyboard = [["📙 Low", "📘 Medium", "📗 High"]]
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
-        elif text == "delete side quest":
+        elif text == "delete quest" or text == "🗑 delete quest":
             sq = questable.get_side_quest(db, player.CHAT_ID, state["extra"])
             sq.delete_from_db()
             drop_state(bot, update, player)
