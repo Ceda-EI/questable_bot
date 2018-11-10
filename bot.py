@@ -28,8 +28,8 @@ def start(bot, update):
     text = f"Hello {name}!\n" + \
         "Welcome to Questable. To get started, check /help."
     custom_keyboard = [
-            ['Add Quest', 'Add Side Quest'],
-            ['List Quests', 'List Side Quests']
+            ['❇️ Add Quest', '📯 Add Side Quest'],
+            ['📜 List Quests', '📃 List Side Quests']
             ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
@@ -163,8 +163,8 @@ def send_status(bot, update, player, prefix=""):
             f'{total_side_quests}\n')
     chat_id = update.message.chat_id
     custom_keyboard = [
-            ['Add Quest', 'Add Side Quest'],
-            ['List Quests', 'List Side Quests']
+            ['❇️ Add Quest', '📯 Add Side Quest'],
+            ['📜 List Quests', '📃 List Side Quests']
             ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup,
@@ -272,8 +272,8 @@ def mark_as_done(bot, update, player, qid, type):
     send_status(bot, update, player, f"<b>🌟 Earned {points} XP</b>\n\n")
     chat_id = update.message.chat_id
     custom_keyboard = [
-            ['Add Quest', 'Add Side Quest'],
-            ['List Quests', 'List Side Quests']
+            ['❇️ Add Quest', '📯 Add Side Quest'],
+            ['📜 List Quests', '📃 List Side Quests']
             ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_animation(chat_id=chat_id, animation=random.choice(config.gifs),
@@ -344,8 +344,8 @@ def help_command(bot, update, db):
     drop_state(bot, update, player)
     chat_id = update.message.chat_id
     custom_keyboard = [
-            ['Add Quest', 'Add Side Quest'],
-            ['List Quests', 'List Side Quests']
+            ['❇️ Add Quest', '📯 Add Side Quest'],
+            ['📜 List Quests', '📃 List Side Quests']
             ]
     text = ("*Questable Bot*\n\nQuestable is an RPG-like bot for maintaining "
             "events in real life. _Main Tasks_ are _Quests_ while _other "
@@ -382,13 +382,13 @@ def message_handling(bot, update, db):
     # eqd / esqd: Edit Quest / Side Quest Difficulty
 
     if state["state"] == "none":
-        if text == "add quest":
+        if text == "add quest" or text == "❇️ add quest":
             add_quest(bot, update, player)
-        elif text == "add side quest":
+        elif text == "add side quest" or text == "📯 add side quest":
             add_quest(bot, update, player, "side_quest")
-        elif text == "list quests":
+        elif text == "list quests" or text == "📜 list quests":
             list_quests(bot, update, player, "quest")
-        elif text == "list side quests":
+        elif text == "list side quests" or text == "📃 list side quests":
             list_quests(bot, update, player, "side_quest")
         else:
             drop_state(bot, update, player)
