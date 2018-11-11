@@ -295,7 +295,7 @@ def edit_quest(bot, update, player, qid, target, type):
 
     if target == "name":
         x.name = message
-        text = "<b>Updated Name</b>"
+        text = "<b>☑️ Updated Name</b>"
     elif target == "imp":
         message = message.lower()
         if message == "low" or message == "🔹 low":
@@ -307,7 +307,7 @@ def edit_quest(bot, update, player, qid, target, type):
         else:
             bot.send_message(chat_id=chat_id, text="Invalid Option")
             return
-        text = "<b>Updated Priority</b>"
+        text = "<b>☑️ Updated Priority</b>"
     elif target == "diff":
         message = message.lower()
         if message == "low" or message == "📙 low":
@@ -319,7 +319,7 @@ def edit_quest(bot, update, player, qid, target, type):
         else:
             bot.send_message(chat_id=chat_id, text="Invalid Option")
             return
-        text = "<b>Updated Difficulty</b>"
+        text = "<b>☑️ Updated Difficulty</b>"
 
     x.update_db()
     if type == "quest":
