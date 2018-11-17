@@ -487,7 +487,7 @@ def message_handling(bot, update, db):
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
-        elif text == "delete quest" or text == "🗑 delete quest":
+        elif text == "delete side quest" or text == "🗑 delete side quest":
             sq = questable.get_side_quest(db, player.CHAT_ID, state["extra"])
             sq.delete_from_db()
             drop_state(bot, update, player)
