@@ -29,7 +29,8 @@ def start(bot, update):
         "Welcome to Questable. To get started, check /help."
     custom_keyboard = [
             ['❇️ Add Quest', '📯 Add Side Quest'],
-            ['📜 List Quests', '📃 List Side Quests']
+            ['📜 List Quests', '📃 List Side Quests'],
+            ['🏅 Player Status']
             ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
@@ -164,7 +165,8 @@ def send_status(bot, update, player, prefix=""):
     chat_id = update.message.chat_id
     custom_keyboard = [
             ['❇️ Add Quest', '📯 Add Side Quest'],
-            ['📜 List Quests', '📃 List Side Quests']
+            ['📜 List Quests', '📃 List Side Quests'],
+            ['🏅 Player Status']
             ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup,
@@ -275,7 +277,8 @@ def mark_as_done(bot, update, player, qid, type):
     chat_id = update.message.chat_id
     custom_keyboard = [
             ['❇️ Add Quest', '📯 Add Side Quest'],
-            ['📜 List Quests', '📃 List Side Quests']
+            ['📜 List Quests', '📃 List Side Quests'],
+            ['🏅 Player Status']
             ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_animation(chat_id=chat_id, animation=random.choice(config.gifs),
@@ -358,7 +361,8 @@ def help_command(bot, update, db):
     chat_id = update.message.chat_id
     custom_keyboard = [
             ['❇️ Add Quest', '📯 Add Side Quest'],
-            ['📜 List Quests', '📃 List Side Quests']
+            ['📜 List Quests', '📃 List Side Quests'],
+            ['🏅 Player Status']
             ]
     text = ("*Questable Bot*\n\nQuestable is an RPG-like bot for maintaining "
             "events in real life. _Main Tasks_ are _Quests_ while _other "
