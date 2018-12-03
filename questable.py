@@ -41,6 +41,9 @@ class base_quest():
         cursor.execute(query, (self.CHAT_ID, self.QID))
         self.DB.commit()
 
+    def __str__(self):
+        return f"{self.QID}: {self.name}"
+
 
 class quest(base_quest):
     TABLE = "quests"

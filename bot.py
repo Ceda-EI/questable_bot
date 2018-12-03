@@ -380,6 +380,24 @@ def help_command(bot, update, db):
                      reply_markup=reply_markup)
 
 
+def rate_command(bot, update, db):
+    player = questable.player(db, update.message.chat_id)
+    drop_state(bot, update, player)
+    chat_id = update.message.chat_id
+    custom_keyboard = [
+            ['❇️ Add Quest', '📯 Add Side Quest'],
+            ['📜 List Quests', '📃 List Side Quests'],
+            ['🏅 Player Status']
+            ]
+    text = ("[Vote for us on Telegram Directory!](https://t.me/tgdrbot?"
+            "start=questable_bot)\n\n"
+            "Telegram Directory is a website that helps you discover top "
+            "telegram channels, bots and groups.")
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    bot.send_message(chat_id=chat_id, text=text, parse_mode="Markdown",
+                     reply_markup=reply_markup)
+
+
 def message_handling(bot, update, db):
     text = update.message.text.lower()
     player = questable.player(db, update.message.chat_id)
@@ -560,28 +578,20 @@ db.commit()
 updater = Updater(token=config.api_key)
 dispatcher = updater.dispatcher
 
-start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
-
-me = CommandHandler('me', lambda x, y: me_handler(x, y, db))
-dispatcher.add_handler(me)
-
-cancel = CommandHandler('cancel', lambda x, y: me_handler(x, y, db))
-dispatcher.add_handler(cancel)
-
-help_h = CommandHandler('help', lambda x, y: help_command(x, y, db))
-dispatcher.add_handler(help_h)
-
-handler = MessageHandler(Filters.text, lambda x, y: message_handling(x, y, db))
-dispatcher.add_handler(handler)
-
-quest_handler = RegexHandler(r"/[Ss]?[Qq]_\d+", lambda x, y:
-                             quest_handling(x, y, db))
-dispatcher.add_handler(quest_handler)
-
-unknown = MessageHandler(Filters.command, lambda x, y: message_handling(x, y,
-                                                                        db))
-dispatcher.add_handler(unknown)
+dispatcher.add_handler(CommandHandler('start', start))
+dispatcher.add_handler(CommandHandler('me', lambda x, y: me_handler(x, y, db)))
+dispatcher.add_handler(CommandHandler('rate', lambda x, y:
+                                      rate_command(x, y, db)))
+dispatcher.add_handler(CommandHandler('cancel', lambda x, y: me_handler(x, y,
+                                                                        db)))
+dispatcher.add_handler(CommandHandler('help', lambda x, y: help_command(x, y,
+                                                                        db)))
+dispatcher.add_handler(MessageHandler(Filters.text, lambda x, y:
+                                      message_handling(x, y, db)))
+dispatcher.add_handler(RegexHandler(r"/[Ss]?[Qq]_\d+", lambda x, y:
+                                    quest_handling(x, y, db)))
+dispatcher.add_handler(MessageHandler(Filters.command, lambda x, y:
+                                      message_handling(x, y, db)))
 
 if config.update_method == "polling":
     updater.start_polling()
