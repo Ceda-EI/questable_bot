@@ -194,13 +194,17 @@ def list_quests(bot, update, player, type):
     else:
         text = ("<b>" + {"quest": "📖", "side_quest": "📒"}[type] +
                 " List of " + {"quest": "Quests", "side_quest":
-                               "Side Quests"}[type] + "</b>\n")
+                               "Side Quests"}[type] + "</b>")
     x.sort(key=lambda i: (i.imp, -i.QID), reverse=True)
-    if type == "quest":
-        for i in x:
+    imp = 3
+    for i in x:
+        if i.imp <= imp:
+            text += "\n\n<b>📌 " + ["Low", "Medium", "High"][i.imp-1]
+            text += "</b>"
+            imp = i.imp - 1
+        if type == "quest":
             text += f"\n/Q_{i.QID} {i.name}"
-    else:
-        for i in x:
+        else:
             text += f"\n/SQ_{i.QID} {i.name}"
 
     chat_id = update.message.chat_id
