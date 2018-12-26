@@ -208,7 +208,8 @@ def list_quests(bot, update, player, type):
             text += f"\n/SQ_{i.QID} {i.name}"
 
     chat_id = update.message.chat_id
-    bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
+    bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML",
+                     disable_web_page_preview=True)
 
 
 def quest(bot, update, player, qid, type):
