@@ -9,6 +9,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, \
         RegexHandler
 import signal
 import sys
+import re
 
 try:
     import config
@@ -18,6 +19,11 @@ except ImportError:
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - \
                     %(message)s', level=logging.INFO)
+
+
+def escape_html(message):
+    return re.sub("<", "&lt;",
+                  re.sub("&", "&amp;", message))
 
 
 def start(bot, update):
@@ -151,6 +157,7 @@ def send_status(bot, update, player, prefix=""):
     name = str(update.message.from_user.first_name)
     if update.message.from_user.last_name:
         name += " " + str(update.message.from_user.last_name)
+    name = escape_html(name)
     points = player.get_points()
     total_quests = len(player.get_quests(None))
     completed_quests = len(player.get_quests(1))
