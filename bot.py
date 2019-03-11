@@ -10,6 +10,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, \
 import signal
 import sys
 import re
+import button_groups
 
 try:
     import config
@@ -33,11 +34,7 @@ def start(bot, update):
         name += " " + str(update.message.from_user.last_name)
     text = f"Hello {name}!\n" + \
         "Welcome to Questable. To get started, check /help."
-    custom_keyboard = [
-            ['❇️ Add Quest', '📯 Add Side Quest'],
-            ['📜 List Quests', '📃 List Side Quests'],
-            ['🏅 Player Status']
-            ]
+    custom_keyboard = button_groups.main
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
@@ -87,7 +84,7 @@ def add_name(bot, update, player, type, qid):
 
     chat_id = update.message.chat_id
     text = "How difficult is it?"
-    custom_keyboard = [["📙 Low", "📘 Medium", "📗 High"]]
+    custom_keyboard = button_groups.difficulty
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
@@ -118,7 +115,7 @@ def add_diff(bot, update, player, type, qid):
     x.update_db()
 
     text = "How important is it?"
-    custom_keyboard = [["🔹 Low", "🔸 Medium", "🔺 High"]]
+    custom_keyboard = button_groups.importance
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
@@ -170,11 +167,7 @@ def send_status(bot, update, player, prefix=""):
             f'<b>💠 Side Quests:</b> {completed_side_quests}/'
             f'{total_side_quests}\n')
     chat_id = update.message.chat_id
-    custom_keyboard = [
-            ['❇️ Add Quest', '📯 Add Side Quest'],
-            ['📜 List Quests', '📃 List Side Quests'],
-            ['🏅 Player Status']
-            ]
+    custom_keyboard = button_groups.main
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup,
                      parse_mode="HTML")
@@ -246,13 +239,7 @@ def quest(bot, update, player, qid, type):
     elif x.state == 0:
         state = {"quest": "eq", "side_quest": "esq"}[type]
         player.set_state(state, qid)
-        custom_keyboard = [
-                ["✅ Mark as done"],
-                ["📝 Edit Name", "⚠️ Change Priority"],
-                ["📚 Change Difficulty", "🗑 Delete " +
-                    {"quest": "Quest", "side_quest": "Side Quest"}[type]],
-                ["⬅️ Back"]]
-
+        custom_keyboard = button_groups.quests(type)
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     chat_id = update.message.chat_id
     bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML",
@@ -287,11 +274,7 @@ def mark_as_done(bot, update, player, qid, type):
     player.set_state('none', 0)
     send_status(bot, update, player, f"<b>🌟 Earned {points} XP</b>\n\n")
     chat_id = update.message.chat_id
-    custom_keyboard = [
-            ['❇️ Add Quest', '📯 Add Side Quest'],
-            ['📜 List Quests', '📃 List Side Quests'],
-            ['🏅 Player Status']
-            ]
+    custom_keyboard = button_groups.main
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     bot.send_animation(chat_id=chat_id, animation=random.choice(config.gifs),
                        reply_markup=reply_markup)
@@ -371,11 +354,7 @@ def help_command(bot, update, db):
     player = questable.player(db, update.message.chat_id)
     drop_state(bot, update, player)
     chat_id = update.message.chat_id
-    custom_keyboard = [
-            ['❇️ Add Quest', '📯 Add Side Quest'],
-            ['📜 List Quests', '📃 List Side Quests'],
-            ['🏅 Player Status']
-            ]
+    custom_keyboard = button_groups.main
     text = ("*Questable Bot*\n\nQuestable is an RPG-like bot for maintaining "
             "events in real life. _Main Tasks_ are _Quests_ while _other "
             "tasks_ are _Side Quests._ You can use the bot to maintain a "
@@ -396,11 +375,7 @@ def rate_command(bot, update, db):
     player = questable.player(db, update.message.chat_id)
     drop_state(bot, update, player)
     chat_id = update.message.chat_id
-    custom_keyboard = [
-            ['❇️ Add Quest', '📯 Add Side Quest'],
-            ['📜 List Quests', '📃 List Side Quests'],
-            ['🏅 Player Status']
-            ]
+    custom_keyboard = button_groups.main
     text = ("[Vote for us on Telegram Directory!](https://t.me/tgdrbot?"
             "start=questable_bot)\n\n"
             "Telegram Directory is a website that helps you discover top "
@@ -474,14 +449,14 @@ def message_handling(bot, update, db):
         elif text == "change priority" or text == "⚠️ change priority":
             player.set_state('eqi', state["extra"])
             text = "How important is it?"
-            custom_keyboard = [["🔹 Low", "🔸 Medium", "🔺 High"]]
+            custom_keyboard = button_groups.importance
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
         elif text == "change difficulty" or text == "📚 change difficulty":
             player.set_state('eqd', state["extra"])
             text = "How difficult is it?"
-            custom_keyboard = [["📙 Low", "📘 Medium", "📗 High"]]
+            custom_keyboard = button_groups.difficulty
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
@@ -510,14 +485,14 @@ def message_handling(bot, update, db):
         elif text == "change priority" or text == "⚠️ change priority":
             player.set_state('esqi', state["extra"])
             text = "How important is it?"
-            custom_keyboard = [["🔹 Low", "🔸 Medium", "🔺 High"]]
+            custom_keyboard = button_groups.importance
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
         elif text == "change difficulty" or text == "📚 change difficulty":
             player.set_state('esqd', state["extra"])
             text = "How difficult is it?"
-            custom_keyboard = [["📙 Low", "📘 Medium", "📗 High"]]
+            custom_keyboard = button_groups.difficulty
             reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
             bot.send_message(chat_id=player.CHAT_ID, text=text,
                              reply_markup=reply_markup)
