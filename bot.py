@@ -557,6 +557,9 @@ queries = [
 
        ("CREATE TABLE IF NOT EXISTS state(chat_id int PRIMARY KEY, state "
            "varchar(10), extra varchar(10));"),
+
+       ("CREATE TABLE IF NOT EXISTS tokens(chat_id int, token varchar(36),"
+           "UNIQUE(chat_id, token));"),
         ]
 for query in queries:
     cursor.execute(query)

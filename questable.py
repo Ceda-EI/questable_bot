@@ -1,3 +1,6 @@
+import uuid
+
+
 class base_quest():
     TABLE = None
 
@@ -153,3 +156,17 @@ class player():
             q = side_quest(self.DB, *row)
             quests.append(q)
         return quests
+
+    def get_tokens(self):
+        cursor = self.DB.cursor()
+        query = ('SELECT token FROM tokens WHERE chat_id=?')
+        cursor.execute(query, (self.CHAT_ID,))
+        tokens = list(map(lambda x: x[0], cursor))
+        return tokens
+
+    def add_token(self):
+        cursor = self.DB.cursor()
+        token = str(uuid.uuid4())
+        query = ('INSERT INTO tokens(chat_id, token) values(?, ?)')
+        cursor.execute(query, (self.CHAT_ID, token))
+        return token
