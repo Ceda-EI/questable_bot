@@ -169,4 +169,11 @@ class player():
         token = str(uuid.uuid4())
         query = ('INSERT INTO tokens(chat_id, token) values(?, ?)')
         cursor.execute(query, (self.CHAT_ID, token))
+        self.DB.commit()
         return token
+
+    def delete_token(self, token):
+        cursor = self.DB.cursor()
+        query = ('DELETE FROM tokens WHERE chat_id = ? AND token = ?')
+        cursor.execute(query, (self.CHAT_ID, token))
+        self.DB.commit()
