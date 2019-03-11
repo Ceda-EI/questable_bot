@@ -348,6 +348,8 @@ def drop_state(bot, update, player):
         x = questable.get_side_quest(player.DB, player.CHAT_ID, state["extra"])
         x.delete_from_db()
         player.set_state('none', 0)
+    else:
+        player.set_state('none', 0)
 
 
 def help_command(bot, update, db):
@@ -385,6 +387,56 @@ def rate_command(bot, update, db):
                      reply_markup=reply_markup)
 
 
+def tokens(bot, update):
+    custom_keyboard = button_groups.tokens
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    reply_text = ("Tokens are used to authenticate external "
+                  "applications. This only provides access to "
+                  "Questable data.")
+    bot.send_message(chat_id=update.message.chat_id, text=reply_text,
+                     reply_markup=reply_markup)
+
+
+def add_token(bot, update, player):
+    custom_keyboard = button_groups.main
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    if len(player.get_tokens()) < 3:
+        reply_text = player.add_token()
+    else:
+        reply_text = "Maximum number of tokens reached."
+    bot.send_message(chat_id=player.CHAT_ID, text=reply_text,
+                     reply_markup=reply_markup)
+
+
+def delete_token(bot, update, player):
+    tokens = player.get_tokens()
+    custom_keyboard = list(map(lambda x: [x], tokens))
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    reply_text = "Choose token to remove."
+    player.set_state("rt")
+    bot.send_message(chat_id=update.message.chat_id, text=reply_text,
+                     reply_markup=reply_markup)
+
+
+def delete_token_rt(bot, update, player):
+    player.delete_token(update.message.text.lower())
+    custom_keyboard = button_groups.main
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    reply_text = "Token has been removed."
+    player.set_state("none")
+    bot.send_message(chat_id=player.CHAT_ID, text=reply_text,
+                     reply_markup=reply_markup)
+
+
+def list_tokens(bot, update, player):
+    custom_keyboard = button_groups.main
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    reply_text = "📋 List of tokens\n\n"
+    reply_text += "\n".join(player.get_tokens())
+    bot.send_message(chat_id=update.message.chat_id, text=reply_text,
+                     reply_markup=reply_markup)
+
+
 def message_handling(bot, update, db):
     text = update.message.text.lower()
     player = questable.player(db, update.message.chat_id)
@@ -402,6 +454,7 @@ def message_handling(bot, update, db):
     # eqn / esqn: Edit Quest / Side Quest Name
     # eqi / esqi: Edit Quest / Side Quest Importance
     # eqd / esqd: Edit Quest / Side Quest Difficulty
+    # rt: Remove token
 
     if state["state"] == "none":
         if text == "add quest" or text == "❇️ add quest":
@@ -412,6 +465,17 @@ def message_handling(bot, update, db):
             list_quests(bot, update, player, "quest")
         elif text == "list side quests" or text == "📃 list side quests":
             list_quests(bot, update, player, "side_quest")
+        elif text == "tokens" or text == "🔑 tokens":
+            tokens(bot, update)
+        elif text == "list tokens" or text == "📋 list tokens":
+            list_tokens(bot, update, player)
+
+        elif text == "generate token" or text == "🔑 generate token":
+            add_token(bot, update, player)
+
+        elif text == "delete token" or text == "🧹 delete token":
+            delete_token(bot, update, player)
+
         else:
             drop_state(bot, update, player)
             send_status(bot, update, player)
@@ -528,6 +592,8 @@ def message_handling(bot, update, db):
     elif state["state"] == "esqd":
         edit_quest(bot, update, player, state["extra"], "diff", "side_quest")
 
+    elif state["state"] == "rt":
+        delete_token_rt(bot, update, player)
     else:
         drop_state(bot, update, player)
         send_status(bot, update, player)
