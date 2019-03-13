@@ -90,7 +90,7 @@ def get_quest(db):
     if player is False:
         return jsonify(errors._401), 401
     try:
-        qid = request.values['qid']
+        qid = request.values['id']
     except(KeyError):
         return jsonify(errors._400), 400
 
@@ -139,9 +139,14 @@ def add_quest(db):
 
     try:
         name = request.values['name']
-        imp = request.values['priority']
-        diff = request.values['difficulty']
+        imp = int(request.values['priority'])
+        diff = int(request.values['difficulty'])
     except (KeyError):
+        return jsonify(errors._400), 400
+    except (ValueError):
+        return jsonify(errors._400), 400
+
+    if imp not in [1, 2, 3] or diff not in [1, 2, 3]:
         return jsonify(errors._400), 400
 
     quest = questable.add_quest(db, player.CHAT_ID, qid, name, imp, diff, 0)
@@ -167,9 +172,14 @@ def add_side_quest(db):
 
     try:
         name = request.values['name']
-        imp = request.values['priority']
-        diff = request.values['difficulty']
+        imp = int(request.values['priority'])
+        diff = int(request.values['difficulty'])
     except (KeyError):
+        return jsonify(errors._400), 400
+    except (ValueError):
+        return jsonify(errors._400), 400
+
+    if imp not in [1, 2, 3] or diff not in [1, 2, 3]:
         return jsonify(errors._400), 400
 
     quest = questable.add_side_quest(db, player.CHAT_ID, qid, name, imp,
@@ -179,3 +189,111 @@ def add_side_quest(db):
 
 app.add_url_rule('/add_side_quest', '/add_side_quest',
                  lambda: add_side_quest(db), methods=['POST'])
+
+
+# /update_quest
+def update_quest(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+    try:
+        qid = request.values['id']
+    except(KeyError):
+        return jsonify(errors._400), 400
+
+    available_keys = [i for i in ['name', 'difficulty', 'priority', 'state']
+                      if i in request.values.keys()]
+    if len(available_keys) == 0:
+        return jsonify(errors._400), 400
+    quest = questable.get_quest(db, player.CHAT_ID, qid)
+
+    if quest.state == 1:
+        return jsonify(dictify_quest(quest))
+
+    for i in available_keys:
+        try:
+            if i == "name":
+                quest.name = request.values["name"]
+            elif i == "difficulty":
+                diff = int(request.values["difficulty"])
+                if diff in [1, 2, 3]:
+                    quest.diff = diff
+                else:
+                    return jsonify(errors._400), 400
+            elif i == "priority":
+                imp = int(request.values["priority"])
+                if imp in [1, 2, 3]:
+                    quest.imp = imp
+                else:
+                    return jsonify(errors._400), 400
+            elif i == "state":
+                state = bool(request.values["state"])
+                if state is True:
+                    quest.state = 1
+                    points = 55 + 10*quest.imp + 15*quest.diff
+                    player.add_points(points)
+                else:
+                    return jsonify(errors._400), 400
+        except (ValueError):
+            return jsonify(errors._400), 400
+
+    quest.update_db()
+    return jsonify(dictify_quest(quest))
+
+
+app.add_url_rule('/update_quest', '/update_quest', lambda: update_quest(db),
+                 methods=['POST'])
+
+
+# /update_side_quest
+def update_side_quest(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+    try:
+        qid = request.values['id']
+    except(KeyError):
+        return jsonify(errors._400), 400
+
+    available_keys = [i for i in ['name', 'difficulty', 'priority', 'state']
+                      if i in request.values.keys()]
+    if len(available_keys) == 0:
+        return jsonify(errors._400), 400
+    quest = questable.get_side_quest(db, player.CHAT_ID, qid)
+
+    if quest.state == 1:
+        return jsonify(dictify_quest(quest))
+
+    for i in available_keys:
+        try:
+            if i == "name":
+                quest.name = request.values["name"]
+            elif i == "difficulty":
+                diff = int(request.values["difficulty"])
+                if diff in [1, 2, 3]:
+                    quest.diff = diff
+                else:
+                    return jsonify(errors._400), 400
+            elif i == "priority":
+                imp = int(request.values["priority"])
+                if imp in [1, 2, 3]:
+                    quest.imp = imp
+                else:
+                    return jsonify(errors._400), 400
+            elif i == "state":
+                state = bool(request.values["state"])
+                if state is True:
+                    quest.state = 1
+                    points = 10*quest.imp + 15*quest.diff
+                    player.add_points(points)
+                else:
+                    return jsonify(errors._400), 400
+        except (ValueError):
+            return jsonify(errors._400), 400
+
+    quest.update_db()
+    return jsonify(dictify_quest(quest))
+
+
+app.add_url_rule('/update_side_quest', '/update_side_quest',
+                 lambda: update_side_quest(db), methods=['POST'])
