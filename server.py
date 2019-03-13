@@ -48,7 +48,7 @@ def player(db):
 app.add_url_rule('/player', '/player', lambda: player(db), methods=['GET'])
 
 
-def objectify(quest):
+def dictify_quest(quest):
     return {
             "id": quest.QID,
             "name": quest.name,
@@ -63,7 +63,7 @@ def get_quests(db):
     player = get_player(db)
     if player is False:
         return jsonify(errors._401), 401
-    quests = list(map(objectify, player.get_quests()))
+    quests = list(map(dictify_quest, player.get_quests()))
     return jsonify(quests)
 
 
@@ -76,9 +76,49 @@ def get_side_quests(db):
     player = get_player(db)
     if player is False:
         return jsonify(errors._401), 401
-    side_quests = list(map(objectify, player.get_side_quests()))
+    side_quests = list(map(dictify_quest, player.get_side_quests()))
     return jsonify(side_quests)
 
 
 app.add_url_rule('/get_side_quests', '/get_side_quests',
                  lambda: get_side_quests(db), methods=['GET'])
+
+
+# /get_quest
+def get_quest(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+    try:
+        qid = request.args['qid']
+    except(KeyError):
+        return jsonify(errors._400), 400
+
+    quest = player.get_quest(qid)
+    if quest is False:
+        return jsonify(errors._404), 404
+    return jsonify(dictify_quest(quest))
+
+
+app.add_url_rule('/get_quest', '/get_quest', lambda: get_quest(db),
+                 methods=['GET'])
+
+
+# /get_side_quest
+def get_side_quest(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+    try:
+        qid = request.args['id']
+    except(KeyError):
+        return jsonify(errors._400), 400
+
+    side_quest = player.get_side_quest(qid)
+    if side_quest is False:
+        return jsonify(errors._404), 404
+    return jsonify(dictify_quest(side_quest))
+
+
+app.add_url_rule('/get_side_quest', '/get_side_quest',
+                 lambda: get_side_quest(db), methods=['GET'])
