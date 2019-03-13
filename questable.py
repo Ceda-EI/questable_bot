@@ -177,3 +177,14 @@ class player():
         query = ('DELETE FROM tokens WHERE chat_id = ? AND token = ?')
         cursor.execute(query, (self.CHAT_ID, token))
         self.DB.commit()
+
+
+def get_player_from_token(db, token):
+    cursor = db.cursor()
+    query = "SELECT chat_id FROM tokens WHERE token=?"
+    cursor.execute(query, (token,))
+    chat_id = cursor.fetchone()
+    if chat_id is None:
+        return False
+    else:
+        return player(db, chat_id[0])
