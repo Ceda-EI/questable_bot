@@ -46,3 +46,39 @@ def player(db):
 
 
 app.add_url_rule('/player', '/player', lambda: player(db), methods=['GET'])
+
+
+def objectify(quest):
+    return {
+            "id": quest.QID,
+            "name": quest.name,
+            "difficulty": quest.diff,
+            "priority": quest.imp,
+            "state": [False, True][quest.state]
+            }
+
+
+# /get_quests
+def get_quests(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+    quests = list(map(objectify, player.get_quests()))
+    return jsonify(quests)
+
+
+app.add_url_rule('/get_quests', '/get_quests', lambda: get_quests(db),
+                 methods=['GET'])
+
+
+# /get_side_quests
+def get_side_quests(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+    side_quests = list(map(objectify, player.get_side_quests()))
+    return jsonify(side_quests)
+
+
+app.add_url_rule('/get_side_quests', '/get_side_quests',
+                 lambda: get_side_quests(db), methods=['GET'])
