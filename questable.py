@@ -157,6 +157,28 @@ class player():
             quests.append(q)
         return quests
 
+    def get_quest(self, qid):
+        cursor = self.DB.cursor()
+        query = ('SELECT chat_id, qid, name, importance, difficulty, '
+                 'state FROM quests WHERE chat_id = ? AND qid = ?')
+        cursor.execute(query, (self.CHAT_ID, qid))
+        row = cursor.fetchone()
+        if row is None:
+            return False
+        else:
+            return quest(self.DB, *row)
+
+    def get_side_quest(self, qid):
+        cursor = self.DB.cursor()
+        query = ('SELECT chat_id, qid, name, importance, difficulty, '
+                 'state FROM quests WHERE chat_id = ? AND qid = ?')
+        cursor.execute(query, (self.CHAT_ID, qid))
+        row = cursor.fetchone()
+        if row is None:
+            return False
+        else:
+            return side_quest(self.DB, *row)
+
     def get_tokens(self):
         cursor = self.DB.cursor()
         query = ('SELECT token FROM tokens WHERE chat_id=?')
