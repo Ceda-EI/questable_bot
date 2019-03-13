@@ -12,7 +12,7 @@ db = sqlite3.connect("questable.db", check_same_thread=False)
 # Returns the player object if valid token
 def get_player(db):
     try:
-        token = request.args['token']
+        token = request.values['token']
     except (AttributeError):
         return False
     except (KeyError):
@@ -90,7 +90,7 @@ def get_quest(db):
     if player is False:
         return jsonify(errors._401), 401
     try:
-        qid = request.args['qid']
+        qid = request.values['qid']
     except(KeyError):
         return jsonify(errors._400), 400
 
@@ -110,7 +110,7 @@ def get_side_quest(db):
     if player is False:
         return jsonify(errors._401), 401
     try:
-        qid = request.args['id']
+        qid = request.values['id']
     except(KeyError):
         return jsonify(errors._400), 400
 
@@ -122,3 +122,60 @@ def get_side_quest(db):
 
 app.add_url_rule('/get_side_quest', '/get_side_quest',
                  lambda: get_side_quest(db), methods=['GET'])
+
+
+# /add_quest
+def add_quest(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+
+    x = player.get_quests(None)
+    if len(x) == 0:
+        qid = 1
+    else:
+        x.sort(key=lambda i: i.QID, reverse=True)
+        qid = x[0].QID + 1
+
+    try:
+        name = request.values['name']
+        imp = request.values['priority']
+        diff = request.values['difficulty']
+    except (KeyError):
+        return jsonify(errors._400), 400
+
+    quest = questable.add_quest(db, player.CHAT_ID, qid, name, imp, diff, 0)
+    return jsonify(dictify_quest(quest))
+
+
+app.add_url_rule('/add_quest', '/add_quest', lambda: add_quest(db),
+                 methods=['POST'])
+
+
+# /add_side_quest
+def add_side_quest(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+
+    x = player.get_side_quests(None)
+    if len(x) == 0:
+        qid = 1
+    else:
+        x.sort(key=lambda i: i.QID, reverse=True)
+        qid = x[0].QID + 1
+
+    try:
+        name = request.values['name']
+        imp = request.values['priority']
+        diff = request.values['difficulty']
+    except (KeyError):
+        return jsonify(errors._400), 400
+
+    quest = questable.add_side_quest(db, player.CHAT_ID, qid, name, imp,
+                                     diff, 0)
+    return jsonify(dictify_quest(quest))
+
+
+app.add_url_rule('/add_side_quest', '/add_side_quest',
+                 lambda: add_side_quest(db), methods=['POST'])
