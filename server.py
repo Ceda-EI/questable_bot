@@ -207,6 +207,9 @@ def update_quest(db):
         return jsonify(errors._400), 400
     quest = questable.get_quest(db, player.CHAT_ID, qid)
 
+    if quest is False:
+        return jsonify(errors._404), 404
+
     if quest.state == 1:
         return jsonify(dictify_quest(quest))
 
@@ -260,6 +263,9 @@ def update_side_quest(db):
     if len(available_keys) == 0:
         return jsonify(errors._400), 400
     quest = questable.get_side_quest(db, player.CHAT_ID, qid)
+
+    if quest is False:
+        return jsonify(errors._404), 404
 
     if quest.state == 1:
         return jsonify(dictify_quest(quest))
