@@ -604,31 +604,13 @@ def sigterm_handler(signal, frame, db):
     sys.exit(0)
 
 
-db = sqlite3.connect("questable.db", check_same_thread=False)
-cursor = db.cursor()
 signal.signal(signal.SIGTERM, lambda x, y: sigterm_handler(x, y, db))
 
-# Set up tables
-queries = [
-       ("CREATE TABLE IF NOT EXISTS quests(chat_id int NOT NULL, qid int NOT"
-           " NULL, name varchar(255), difficulty int, importance int, "
-           "state int DEFAULT 0, UNIQUE(chat_id, qid));"),
-
-       ("CREATE TABLE IF NOT EXISTS side_quests(chat_id int NOT NULL, qid int "
-           "NOT NULL, name varchar(255), difficulty int, importance int, "
-           "state int DEFAULT 0, UNIQUE(chat_id, qid));"),
-
-       ("CREATE TABLE IF NOT EXISTS points(chat_id int PRIMARY KEY, points "
-           "int);"),
-
-       ("CREATE TABLE IF NOT EXISTS state(chat_id int PRIMARY KEY, state "
-           "varchar(10), extra varchar(10));"),
-
-       ("CREATE TABLE IF NOT EXISTS tokens(chat_id int, token varchar(36),"
-           "UNIQUE(chat_id, token));"),
-        ]
-for query in queries:
-    cursor.execute(query)
+# Set up database and tables
+db = sqlite3.connect("questable.db", check_same_thread=False)
+cursor = db.cursor()
+with open('schema.sql') as f:
+    cursor.executescript(f.read())
 db.commit()
 
 updater = Updater(token=config.api_key)
