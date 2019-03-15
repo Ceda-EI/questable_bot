@@ -94,9 +94,11 @@ def get_quest(db):
     except(KeyError):
         return jsonify(errors._400), 400
 
-    quest = player.get_quest(qid)
-    if quest is False:
+    try:
+        quest = player.get_quest(qid)
+    except Exception:
         return jsonify(errors._404), 404
+
     return jsonify(dictify_quest(quest))
 
 
@@ -115,8 +117,12 @@ def get_side_quest(db):
         return jsonify(errors._400), 400
 
     side_quest = player.get_side_quest(qid)
-    if side_quest is False:
+
+    try:
+        side_quest = player.get_quest(qid)
+    except Exception:
         return jsonify(errors._404), 404
+
     return jsonify(dictify_quest(side_quest))
 
 
@@ -303,3 +309,55 @@ def update_side_quest(db):
 
 app.add_url_rule('/update_side_quest', '/update_side_quest',
                  lambda: update_side_quest(db), methods=['POST'])
+
+
+# /delete_quest
+def delete_quest(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+    try:
+        qid = request.values['id']
+    except(KeyError):
+        return jsonify(errors._400), 400
+
+    try:
+        quest = questable.get_quest(db, player.CHAT_ID, qid)
+    except Exception:
+        return jsonify(errors._404), 404
+
+    if quest.state == 1:
+        return jsonify({"success": False})
+
+    quest.delete_from_db()
+    return jsonify({"success": True})
+
+
+app.add_url_rule('/delete_quest', '/delete_quest',
+                 lambda: delete_quest(db), methods=['DELETE'])
+
+
+# /delete_side_quest
+def delete_side_quest(db):
+    player = get_player(db)
+    if player is False:
+        return jsonify(errors._401), 401
+    try:
+        qid = request.values['id']
+    except(KeyError):
+        return jsonify(errors._400), 400
+
+    try:
+        side_quest = questable.get_side_quest(db, player.CHAT_ID, qid)
+    except Exception:
+        return jsonify(errors._404), 404
+
+    if side_quest.state == 1:
+        return jsonify({"success": False})
+
+    side_quest.delete_from_db()
+    return jsonify({"success": True})
+
+
+app.add_url_rule('/delete_side_quest', '/delete_side_quest',
+                 lambda: delete_side_quest(db), methods=['DELETE'])
