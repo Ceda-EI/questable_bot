@@ -36,12 +36,14 @@ def player(db):
     player = get_player(db)
     if player is False:
         return jsonify(errors._401), 401
+    noq = len(player.get_quests(None))
+    nosq = len(player.get_side_quests(None))
     return jsonify({
             "xp": player.get_points(),
-            "quests_completed": len(player.get_quests()),
-            "total_quests": len(player.get_quests(None)),
-            "side_quests_completed": len(player.get_side_quests()),
-            "total_side_quests": len(player.get_side_quests(None)),
+            "quests_completed": noq - len(player.get_quests()),
+            "total_quests": noq,
+            "side_quests_completed": nosq - len(player.get_side_quests()),
+            "total_side_quests": nosq,
             })
 
 
