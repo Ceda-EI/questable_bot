@@ -149,10 +149,10 @@ def add_quest(db):
     except (KeyError):
         return jsonify(errors._400), 400
     except (ValueError):
-        return jsonify(errors._400), 400
+        return jsonify(errors._400_bv), 400
 
     if imp not in [1, 2, 3] or diff not in [1, 2, 3]:
-        return jsonify(errors._400), 400
+        return jsonify(errors._400_bv), 400
 
     quest = questable.add_quest(db, player.CHAT_ID, qid, name, imp, diff, 0)
     return jsonify(dictify_quest(quest))
@@ -182,10 +182,10 @@ def add_side_quest(db):
     except (KeyError):
         return jsonify(errors._400), 400
     except (ValueError):
-        return jsonify(errors._400), 400
+        return jsonify(errors._400_bv), 400
 
     if imp not in [1, 2, 3] or diff not in [1, 2, 3]:
-        return jsonify(errors._400), 400
+        return jsonify(errors._400_bv), 400
 
     quest = questable.add_side_quest(db, player.CHAT_ID, qid, name, imp,
                                      diff, 0)
@@ -227,13 +227,13 @@ def update_quest(db):
                 if diff in [1, 2, 3]:
                     quest.diff = diff
                 else:
-                    return jsonify(errors._400), 400
+                    return jsonify(errors._400_bv), 400
             elif i == "priority":
                 imp = int(request.values["priority"])
                 if imp in [1, 2, 3]:
                     quest.imp = imp
                 else:
-                    return jsonify(errors._400), 400
+                    return jsonify(errors._400_bv), 400
             elif i == "state":
                 state = bool(request.values["state"])
                 if state is True:
@@ -241,9 +241,9 @@ def update_quest(db):
                     points = 55 + 10*quest.imp + 15*quest.diff
                     player.add_points(points)
                 else:
-                    return jsonify(errors._400), 400
+                    return jsonify(errors._400_bv), 400
         except (ValueError):
-            return jsonify(errors._400), 400
+            return jsonify(errors._400_bv), 400
 
     quest.update_db()
     return jsonify(dictify_quest(quest))
@@ -284,13 +284,13 @@ def update_side_quest(db):
                 if diff in [1, 2, 3]:
                     quest.diff = diff
                 else:
-                    return jsonify(errors._400), 400
+                    return jsonify(errors._400_bv), 400
             elif i == "priority":
                 imp = int(request.values["priority"])
                 if imp in [1, 2, 3]:
                     quest.imp = imp
                 else:
-                    return jsonify(errors._400), 400
+                    return jsonify(errors._400_bv), 400
             elif i == "state":
                 state = bool(request.values["state"])
                 if state is True:
@@ -298,9 +298,9 @@ def update_side_quest(db):
                     points = 10*quest.imp + 15*quest.diff
                     player.add_points(points)
                 else:
-                    return jsonify(errors._400), 400
+                    return jsonify(errors._400_bv), 400
         except (ValueError):
-            return jsonify(errors._400), 400
+            return jsonify(errors._400_bv), 400
 
     quest.update_db()
     return jsonify(dictify_quest(quest))
