@@ -171,7 +171,7 @@ class player():
     def get_side_quest(self, qid):
         cursor = self.DB.cursor()
         query = ('SELECT chat_id, qid, name, importance, difficulty, '
-                 'state FROM quests WHERE chat_id = ? AND qid = ?')
+                 'state FROM side_quests WHERE chat_id = ? AND qid = ?')
         cursor.execute(query, (self.CHAT_ID, qid))
         row = cursor.fetchone()
         if row is None:
