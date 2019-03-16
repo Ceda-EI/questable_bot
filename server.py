@@ -96,9 +96,8 @@ def get_quest(db):
     except(KeyError):
         return jsonify(errors._400), 400
 
-    try:
-        quest = player.get_quest(qid)
-    except Exception:
+    quest = player.get_quest(qid)
+    if quest is False:
         return jsonify(errors._404), 404
 
     return jsonify(dictify_quest(quest))
@@ -120,9 +119,7 @@ def get_side_quest(db):
 
     side_quest = player.get_side_quest(qid)
 
-    try:
-        side_quest = player.get_quest(qid)
-    except Exception:
+    if side_quest is False:
         return jsonify(errors._404), 404
 
     return jsonify(dictify_quest(side_quest))
