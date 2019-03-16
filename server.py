@@ -3,7 +3,7 @@
 import questable
 import sqlite3
 import errors
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 
 app = Flask(__name__)
 db = sqlite3.connect("questable.db", check_same_thread=False)
@@ -361,3 +361,8 @@ def delete_side_quest(db):
 
 app.add_url_rule('/delete_side_quest', '/delete_side_quest',
                  lambda: delete_side_quest(db), methods=['DELETE'])
+
+
+@app.route('/')
+def redirect_to_docs():
+    return redirect("https://questable.webionite.com/api", code=301)
