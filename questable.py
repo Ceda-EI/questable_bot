@@ -1,3 +1,6 @@
+import uuid
+
+
 class base_quest():
     TABLE = None
 
@@ -153,3 +156,57 @@ class player():
             q = side_quest(self.DB, *row)
             quests.append(q)
         return quests
+
+    def get_quest(self, qid):
+        cursor = self.DB.cursor()
+        query = ('SELECT chat_id, qid, name, importance, difficulty, '
+                 'state FROM quests WHERE chat_id = ? AND qid = ?')
+        cursor.execute(query, (self.CHAT_ID, qid))
+        row = cursor.fetchone()
+        if row is None:
+            return False
+        else:
+            return quest(self.DB, *row)
+
+    def get_side_quest(self, qid):
+        cursor = self.DB.cursor()
+        query = ('SELECT chat_id, qid, name, importance, difficulty, '
+                 'state FROM side_quests WHERE chat_id = ? AND qid = ?')
+        cursor.execute(query, (self.CHAT_ID, qid))
+        row = cursor.fetchone()
+        if row is None:
+            return False
+        else:
+            return side_quest(self.DB, *row)
+
+    def get_tokens(self):
+        cursor = self.DB.cursor()
+        query = ('SELECT token FROM tokens WHERE chat_id=?')
+        cursor.execute(query, (self.CHAT_ID,))
+        tokens = list(map(lambda x: x[0], cursor))
+        return tokens
+
+    def add_token(self):
+        cursor = self.DB.cursor()
+        token = str(uuid.uuid4())
+        query = ('INSERT INTO tokens(chat_id, token) values(?, ?)')
+        cursor.execute(query, (self.CHAT_ID, token))
+        self.DB.commit()
+        return token
+
+    def delete_token(self, token):
+        cursor = self.DB.cursor()
+        query = ('DELETE FROM tokens WHERE chat_id = ? AND token = ?')
+        cursor.execute(query, (self.CHAT_ID, token))
+        self.DB.commit()
+
+
+def get_player_from_token(db, token):
+    cursor = db.cursor()
+    query = "SELECT chat_id FROM tokens WHERE token=?"
+    cursor.execute(query, (token,))
+    chat_id = cursor.fetchone()
+    if chat_id is None:
+        return False
+    else:
+        return player(db, chat_id[0])
