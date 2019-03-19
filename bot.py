@@ -29,9 +29,12 @@ def escape_html(message):
 
 def start(bot, update):
     chat_id = update.message.chat_id
-    name = str(update.message.from_user.first_name)
-    if update.message.from_user.last_name:
-        name += " " + str(update.message.from_user.last_name)
+    if update.message.chat.type == "private":
+        name = str(update.message.from_user.first_name)
+        if update.message.from_user.last_name:
+            name += " " + str(update.message.from_user.last_name)
+    else:
+        name = update.message.chat.title
     text = f"Hello {name}!\n" + \
         "Welcome to Questable. To get started, check /help."
     custom_keyboard = button_groups.main
@@ -65,7 +68,10 @@ def add_quest(bot, update, player, type="quest"):
     chat_id = update.message.chat_id
     text = ("What shall the name of " +
             {"quest": "Quest", "side_quest": "Side Quest"}[type] + " be?")
-    reply_markup = telegram.ReplyKeyboardRemove()
+    if update.message.chat.type == "private":
+        reply_markup = telegram.ReplyKeyboardRemove()
+    else:
+        reply_markup = telegram.ForceReply()
     bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
 
@@ -151,9 +157,12 @@ def add_imp(bot, update, player, type, qid):
 
 
 def send_status(bot, update, player, prefix=""):
-    name = str(update.message.from_user.first_name)
-    if update.message.from_user.last_name:
-        name += " " + str(update.message.from_user.last_name)
+    if update.message.chat.type == "private":
+        name = str(update.message.from_user.first_name)
+        if update.message.from_user.last_name:
+            name += " " + str(update.message.from_user.last_name)
+    else:
+        name = update.message.chat.title
     name = escape_html(name)
     points = player.get_points()
     total_quests = len(player.get_quests(None))
@@ -247,7 +256,7 @@ def quest(bot, update, player, qid, type):
 
 
 def quest_handling(bot, update, db):
-    text = update.message.text.lower().split("_")
+    text = update.message.text.lower().split("@")[0].split("_")
     chat_id = update.message.chat_id
     player = questable.player(db, chat_id)
     drop_state(bot, update, player)
