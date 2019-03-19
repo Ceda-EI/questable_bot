@@ -238,12 +238,14 @@ def update_quest(db):
                 state = bool(request.values["state"])
                 if state is True:
                     quest.state = 1
-                    points = 55 + 10*quest.imp + 15*quest.diff
-                    player.add_points(points)
                 else:
                     return jsonify(errors._400_bv), 400
         except (ValueError):
             return jsonify(errors._400_bv), 400
+
+    if quest.state == 1:
+        points = 55 + 10*quest.imp + 15*quest.diff
+        player.add_points(points)
 
     quest.update_db()
     return jsonify(dictify_quest(quest))
@@ -295,12 +297,14 @@ def update_side_quest(db):
                 state = bool(request.values["state"])
                 if state is True:
                     quest.state = 1
-                    points = 10*quest.imp + 15*quest.diff
-                    player.add_points(points)
                 else:
                     return jsonify(errors._400_bv), 400
         except (ValueError):
             return jsonify(errors._400_bv), 400
+
+    if quest.state == 1:
+        points = 10*quest.imp + 15*quest.diff
+        player.add_points(points)
 
     quest.update_db()
     return jsonify(dictify_quest(quest))
