@@ -486,8 +486,8 @@ def message_handling(bot, update, db):
             delete_token(bot, update, player)
 
         else:
-            drop_state(bot, update, player)
-            send_status(bot, update, player)
+            if update.message.chat.type == "private":
+                send_status(bot, update, player)
 
     elif state["state"] == "aq":
         add_name(bot, update, player, "quest", state["extra"])
@@ -540,8 +540,9 @@ def message_handling(bot, update, db):
             prefix = f"<b>Quest {quest.name} has been deleted</b>\n\n"
             send_status(bot, update, player, prefix=prefix)
         else:
-            drop_state(bot, update, player)
-            send_status(bot, update, player)
+            if update.message.chat.type == "private":
+                drop_state(bot, update, player)
+                send_status(bot, update, player)
 
     elif state["state"] == "esq":
         if text == "back" or text == "⬅️ back":
@@ -576,12 +577,14 @@ def message_handling(bot, update, db):
             prefix = f"<b>Side Quest {sq.name} has been deleted</b>\n\n"
             send_status(bot, update, player, prefix=prefix)
         else:
-            drop_state(bot, update, player)
-            send_status(bot, update, player)
+            if update.message.chat.type == "private":
+                drop_state(bot, update, player)
+                send_status(bot, update, player)
 
     elif state["state"] == "bo":
-        player.set_state('none', 0)
-        send_status(bot, update, player)
+        if text == "back" or update.message.chat.type == "private":
+            player.set_state('none', 0)
+            send_status(bot, update, player)
 
     elif state["state"] == "eqn":
         edit_quest(bot, update, player, state["extra"], "name", "quest")
@@ -604,8 +607,9 @@ def message_handling(bot, update, db):
     elif state["state"] == "rt":
         delete_token_rt(bot, update, player)
     else:
-        drop_state(bot, update, player)
-        send_status(bot, update, player)
+        if update.message.chat.type == "private":
+            drop_state(bot, update, player)
+            send_status(bot, update, player)
 
 
 def sigterm_handler(signal, frame, db):
