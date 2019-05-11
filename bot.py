@@ -482,6 +482,9 @@ def message_handling(bot, update, db):
             add_token(bot, update, player)
         elif text in ["delete token", "🧹 delete token", "dt"]:
             delete_token(bot, update, player)
+        elif text == "ls":
+            list_quests(bot, update, player, "side_quest")
+            list_quests(bot, update, player, "quest")
 
         else:
             if update.message.chat.type == "private":
