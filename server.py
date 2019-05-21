@@ -235,7 +235,8 @@ def update_quest(db):
                 else:
                     return jsonify(errors._400_bv), 400
             elif i == "state":
-                state = bool(request.values["state"])
+                state = (True if str(request.values['state']).lower()
+                         in ["1", "true"] else False)
                 if state is True:
                     quest.state = 1
                 else:
@@ -294,7 +295,8 @@ def update_side_quest(db):
                 else:
                     return jsonify(errors._400_bv), 400
             elif i == "state":
-                state = bool(request.values["state"])
+                state = (True if str(request.values['state']).lower()
+                         in ["1", "true"] else False)
                 if state is True:
                     quest.state = 1
                 else:
