@@ -401,9 +401,13 @@ def tokens(bot, update):
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     reply_text = ("Tokens are used to authenticate external "
                   "applications. This only provides access to "
-                  "Questable data.")
+                  "Questable data.\n"
+                  "\nOfficial clients are:\n"
+                  "[Questable CLI](https://gitlab.com/questable/questable-cli)"
+                  )
     bot.send_message(chat_id=update.message.chat_id, text=reply_text,
-                     reply_markup=reply_markup)
+                     reply_markup=reply_markup, parse_mode="markdown",
+                     disable_web_page_preview=True)
 
 
 def add_token(bot, update, player):
