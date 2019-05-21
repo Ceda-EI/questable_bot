@@ -15,6 +15,7 @@ Source code for [Questable Bot](https://t.me/questable_bot) and the relevant
 
 + Install the dependencies
 	+ `pip3 install python-telegram-bot`
++ Copy `sample.config.py` to `config.py` and edit it accordingly.
 + Run the bot
 	+ `python3 bot.py`
 
