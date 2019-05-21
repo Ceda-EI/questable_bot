@@ -9,7 +9,7 @@ class base_quest():
         self.DB = db
         self.CHAT_ID = chat_id
         self.name = name
-        self.QID = qid
+        self.QID = int(qid)
         self.imp = imp
         self.diff = diff
         self.state = state
