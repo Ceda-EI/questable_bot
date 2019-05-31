@@ -4,8 +4,10 @@ import questable
 import sqlite3
 import errors
 from flask import Flask, jsonify, request, redirect
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 db = sqlite3.connect("questable.db", check_same_thread=False)
 
 

@@ -22,7 +22,7 @@ Source code for [Questable Bot](https://t.me/questable_bot) and the relevant
 ## Questable API Server
 
 + Install the dependencies
-	+ `pip3 install Flask`
+	+ `pip3 install Flask flask_cors`
 + Install `gunicorn`
 	+ `pip3 install gunicorn`
 + Run `gunicorn3 -b 127.0.0.1:5000 server:app`. Change port if you want to run
