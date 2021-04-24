@@ -631,7 +631,7 @@ with open('schema.sql') as f:
     cursor.executescript(f.read())
 db.commit()
 
-updater = Updater(token=config.api_key)
+updater = Updater(token=config.api_key, use_context=False)
 dispatcher = updater.dispatcher
 
 dispatcher.add_handler(CommandHandler('start', start))
@@ -642,11 +642,11 @@ dispatcher.add_handler(CommandHandler('cancel', lambda x, y: me_handler(x, y,
                                                                         db)))
 dispatcher.add_handler(CommandHandler('help', lambda x, y: help_command(x, y,
                                                                         db)))
-dispatcher.add_handler(MessageHandler(Filters.text, lambda x, y:
-                                      message_handling(x, y, db)))
 dispatcher.add_handler(RegexHandler(r"/[Ss]?[Qq]_\d+", lambda x, y:
                                     quest_handling(x, y, db)))
 dispatcher.add_handler(MessageHandler(Filters.command, lambda x, y:
+                                      message_handling(x, y, db)))
+dispatcher.add_handler(MessageHandler(Filters.text, lambda x, y:
                                       message_handling(x, y, db)))
 
 if config.update_method == "polling":
